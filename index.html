@@ -1133,6 +1133,7 @@
         let currentRecordCount = 0;
         let notifications = [];
         let unreadCount = 0;
+        let isAppInitialized = false;
 
         // Data Handler
         const dataHandler = {
@@ -1179,9 +1180,47 @@
             }
         }
 
+        // Session Management
+        function saveSession() {
+            if (currentUser) {
+                sessionStorage.setItem('agritech-session', JSON.stringify({
+                    user: currentUser,
+                    timestamp: Date.now()
+                }));
+            }
+        }
+
+        function loadSession() {
+            try {
+                const sessionData = sessionStorage.getItem('agritech-session');
+                if (sessionData) {
+                    const session = JSON.parse(sessionData);
+                    // Check if session is less than 24 hours old
+                    if (Date.now() - session.timestamp < 24 * 60 * 60 * 1000) {
+                        currentUser = session.user;
+                        return true;
+                    } else {
+                        sessionStorage.removeItem('agritech-session');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading session:', error);
+                sessionStorage.removeItem('agritech-session');
+            }
+            return false;
+        }
+
+        function clearSession() {
+            sessionStorage.removeItem('agritech-session');
+            currentUser = null;
+        }
+
         // Initialize Application
         async function initializeApp() {
             try {
+                // Check for existing session first
+                const hasSession = loadSession();
+                
                 // Initialize Data SDK with error handling
                 if (window.dataSdk) {
                     try {
@@ -1240,9 +1279,39 @@
                 // Initialize alerts
                 initializeAlerts();
 
+                // If user has valid session, restore login state
+                if (hasSession && currentUser) {
+                    restoreLoginState();
+                }
+
+                isAppInitialized = true;
+
             } catch (error) {
                 console.error("Error initializing app:", error);
                 // Continue with basic functionality
+                isAppInitialized = true;
+            }
+        }
+
+        function restoreLoginState() {
+            if (currentUser) {
+                document.getElementById('user-name').textContent = currentUser.full_name;
+                
+                // Show admin menu if admin
+                if (currentUser.role === 'admin') {
+                    document.getElementById('admin-menu').classList.remove('hidden');
+                } else {
+                    document.getElementById('admin-menu').classList.add('hidden');
+                }
+                
+                // Hide login, show app
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                
+                // Update last sync time
+                updateLastSync();
+                
+                console.log('Session restored for user:', currentUser.full_name);
             }
         }
 
@@ -1465,6 +1534,8 @@
             
             if (user) {
                 currentUser = user;
+                saveSession(); // Save session to sessionStorage
+                
                 document.getElementById('user-name').textContent = user.full_name;
                 
                 // Show admin menu if admin
@@ -1565,6 +1636,8 @@
                 const demoUser = demoUsers[role];
                 if (demoUser) {
                     currentUser = demoUser;
+                    saveSession(); // Save session to sessionStorage
+                    
                     document.getElementById('user-name').textContent = demoUser.full_name;
                     
                     // Show admin menu if admin
@@ -1602,7 +1675,7 @@
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    currentUser = null;
+                    clearSession(); // Clear session from sessionStorage
                     document.getElementById('admin-menu').classList.add('hidden');
                     document.getElementById('main-app').classList.add('hidden');
                     document.getElementById('login-screen').classList.remove('hidden');
@@ -1673,6 +1746,10 @@
         }
 
         function showAddLahanModal() {
+            if (!isAppInitialized) {
+                showToast('Sistem sedang memuat, silakan tunggu...', 'info');
+                return;
+            }
             document.getElementById('add-lahan-modal').classList.remove('hidden');
         }
 
@@ -2248,6 +2325,10 @@
 
         // Modal Functions
         function showAddAktivitasModal() {
+            if (!isAppInitialized) {
+                showToast('Sistem sedang memuat, silakan tunggu...', 'info');
+                return;
+            }
             document.getElementById('add-aktivitas-modal').classList.remove('hidden');
         }
 
@@ -2256,6 +2337,10 @@
         }
 
         function showAddInventarisModal() {
+            if (!isAppInitialized) {
+                showToast('Sistem sedang memuat, silakan tunggu...', 'info');
+                return;
+            }
             document.getElementById('add-inventaris-modal').classList.remove('hidden');
         }
 
@@ -2264,6 +2349,10 @@
         }
 
         function showAddTransaksiModal() {
+            if (!isAppInitialized) {
+                showToast('Sistem sedang memuat, silakan tunggu...', 'info');
+                return;
+            }
             document.getElementById('add-transaksi-modal').classList.remove('hidden');
         }
 
@@ -2272,6 +2361,10 @@
         }
 
         function showAddUserModal() {
+            if (!isAppInitialized) {
+                showToast('Sistem sedang memuat, silakan tunggu...', 'info');
+                return;
+            }
             document.getElementById('add-user-modal').classList.remove('hidden');
         }
 
@@ -2280,6 +2373,10 @@
         }
 
         function showEditLahanModal() {
+            if (!isAppInitialized) {
+                showToast('Sistem sedang memuat, silakan tunggu...', 'info');
+                return;
+            }
             document.getElementById('edit-lahan-modal').classList.remove('hidden');
         }
 
@@ -2288,6 +2385,10 @@
         }
 
         function showEditUserModal() {
+            if (!isAppInitialized) {
+                showToast('Sistem sedang memuat, silakan tunggu...', 'info');
+                return;
+            }
             document.getElementById('edit-user-modal').classList.remove('hidden');
         }
 
@@ -2296,6 +2397,10 @@
         }
 
         function showProfileModal() {
+            if (!isAppInitialized) {
+                showToast('Sistem sedang memuat, silakan tunggu...', 'info');
+                return;
+            }
             if (currentUser) {
                 document.getElementById('profile-name').textContent = currentUser.full_name;
                 document.getElementById('profile-role').textContent = currentUser.role;
@@ -2311,6 +2416,10 @@
         }
 
         function showUserSettingsModal() {
+            if (!isAppInitialized) {
+                showToast('Sistem sedang memuat, silakan tunggu...', 'info');
+                return;
+            }
             document.getElementById('user-settings-modal').classList.remove('hidden');
         }
 
@@ -3600,5 +3709,5 @@
     </main>
    </div>
   </div>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fa9681725181c0',t:'MTc2MzMzMzg1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99faa0fb84619f92',t:'MTc2MzMzNDI4Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
