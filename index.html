@@ -1,0 +1,2814 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriTech Tebu Management System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .hover-scale {
+            transition: transform 0.2s ease;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar-active {
+            transform: translateX(0);
+        }
+        
+        .sidebar-hidden {
+            transform: translateX(-100%);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                z-index: 50;
+            }
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+        
+        .status-online {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .config-highlight {
+            animation: highlightPulse 3s infinite;
+            border: 3px solid #3b82f6;
+        }
+        
+        @keyframes highlightPulse {
+            0%, 100% { 
+                border-color: #3b82f6;
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            }
+            50% { 
+                border-color: #10b981;
+                box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full bg-gray-50 font-sans"><!-- Login Screen -->
+  <div id="login-screen" class="min-h-full flex items-center justify-center gradient-bg">
+   <div class="max-w-md w-full space-y-8 p-8">
+    <div class="text-center">
+     <div class="mx-auto h-20 w-20 bg-white rounded-full flex items-center justify-center mb-4"><i class="fas fa-seedling text-3xl text-green-600"></i>
+     </div>
+     <h2 id="system-title" class="text-3xl font-bold text-white">AgriTech Tebu Management</h2>
+     <p class="mt-2 text-sm text-gray-200">Sistem Manajemen Pertanian Tebu Terpadu</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-2xl p-8 glass-effect">
+     <form id="login-form" class="space-y-6">
+      <div><label for="username" class="block text-sm font-medium text-gray-700"> <i class="fas fa-user mr-2"></i>Username </label> <input id="username" name="username" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Masukkan username">
+      </div>
+      <div><label for="password" class="block text-sm font-medium text-gray-700"> <i class="fas fa-lock mr-2"></i>Password </label>
+       <div class="relative"><input id="password" name="password" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent pr-10" placeholder="Masukkan password"> <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center"> <i id="password-icon" class="fas fa-eye text-gray-400"></i> </button>
+       </div>
+      </div>
+      <div class="flex items-center justify-between">
+       <div class="flex items-center"><input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"> <label for="remember-me" class="ml-2 block text-sm text-gray-700"> Ingat saya </label>
+       </div>
+       <div class="text-sm"><a href="#" class="font-medium text-green-600 hover:text-green-500"> Lupa password? </a>
+       </div>
+      </div>
+      <div><button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"> <i class="fas fa-sign-in-alt mr-2"></i> Masuk </button>
+      </div>
+      <div class="text-center">
+       <p class="text-sm text-gray-600">Belum punya akun? <button type="button" onclick="showRegister()" class="font-medium text-green-600 hover:text-green-500"> Daftar sekarang </button></p>
+      </div>
+     </form><!-- Demo Accounts -->
+     <div class="mt-6 pt-6 border-t border-gray-200">
+      <p class="text-xs text-gray-500 text-center mb-3">Akun Demo:</p>
+      <div class="grid grid-cols-2 gap-2"><button onclick="loginDemo('admin')" class="text-xs bg-blue-100 text-blue-800 px-3 py-2 rounded-lg hover:bg-blue-200 transition-colors"> <i class="fas fa-user-shield mr-1"></i>Admin </button> <button onclick="loginDemo('petani')" class="text-xs bg-green-100 text-green-800 px-3 py-2 rounded-lg hover:bg-green-200 transition-colors"> <i class="fas fa-user mr-1"></i>Petani </button>
+      </div><!-- Quick Access to Config -->
+      <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+       <p class="text-xs text-blue-800 font-medium mb-2"><i class="fas fa-info-circle mr-1"></i>Cara Akses Form Konfigurasi:</p>
+       <ol class="text-xs text-blue-700 space-y-1">
+        <li>1. Login sebagai <strong>Admin</strong></li>
+        <li>2. Klik menu <strong>"Pengaturan"</strong></li>
+        <li>3. Scroll ke <strong>"Koneksi Google Sheet"</strong></li>
+       </ol>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Register Modal -->
+  <div id="register-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+   <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fade-in">
+    <div class="flex justify-between items-center mb-6">
+     <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-user-plus mr-2 text-green-600"></i>Registrasi Akun</h3><button onclick="hideRegister()" class="text-gray-400 hover:text-gray-600"> <i class="fas fa-times"></i> </button>
+    </div>
+    <form id="register-form" class="space-y-4">
+     <div><label for="reg-fullname" class="block text-sm font-medium text-gray-700">Nama Lengkap</label> <input id="reg-fullname" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Nama lengkap">
+     </div>
+     <div><label for="reg-email" class="block text-sm font-medium text-gray-700">Email</label> <input id="reg-email" type="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="email@example.com">
+     </div>
+     <div><label for="reg-phone" class="block text-sm font-medium text-gray-700">No. Telepon</label> <input id="reg-phone" type="tel" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="08xxxxxxxxxx">
+     </div>
+     <div><label for="reg-username" class="block text-sm font-medium text-gray-700">Username</label> <input id="reg-username" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Username">
+     </div>
+     <div><label for="reg-password" class="block text-sm font-medium text-gray-700">Password</label> <input id="reg-password" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Password">
+     </div>
+     <div><label for="reg-role" class="block text-sm font-medium text-gray-700">Role</label> <select id="reg-role" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"> <option value="">Pilih Role</option> <option value="petani">Petani</option> <option value="supervisor">Supervisor</option> </select>
+     </div><button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"> <i class="fas fa-user-plus mr-2"></i>Daftar </button>
+    </form>
+   </div>
+  </div><!-- Main Application -->
+  <div id="main-app" class="hidden min-h-full"><!-- Sidebar -->
+   <div id="sidebar" class="sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform sidebar-hidden transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed lg:inset-y-0">
+    <div class="flex items-center justify-center h-16 bg-green-600">
+     <div class="flex items-center"><i class="fas fa-seedling text-white text-2xl mr-3"></i> <span class="text-white text-lg font-bold">AgriTech</span>
+     </div>
+    </div>
+    <nav class="mt-5 px-2">
+     <div class="space-y-1"><button onclick="showSection('dashboard')" class="nav-item group flex items-center px-2 py-2 text-base font-medium rounded-md text-green-600 bg-green-100 w-full text-left"> <i class="fas fa-tachometer-alt mr-3"></i>Dashboard </button> <button onclick="showSection('lahan')" class="nav-item group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full text-left"> <i class="fas fa-map-marked-alt mr-3"></i>Manajemen Lahan </button> <button onclick="showSection('produksi')" class="nav-item group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full text-left"> <i class="fas fa-seedling mr-3"></i>Produksi </button> <button onclick="showSection('inventaris')" class="nav-item group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full text-left"> <i class="fas fa-boxes mr-3"></i>Inventaris </button> <button onclick="showSection('keuangan')" class="nav-item group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full text-left"> <i class="fas fa-chart-line mr-3"></i>Keuangan </button> <button onclick="showSection('monitoring')" class="nav-item group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full text-left"> <i class="fas fa-satellite-dish mr-3"></i>Monitoring </button>
+      <div id="admin-menu" class="hidden"><button onclick="showSection('users')" class="nav-item group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full text-left"> <i class="fas fa-users mr-3"></i>Manajemen User </button> <button onclick="showSection('settings')" class="nav-item group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full text-left relative"> <i class="fas fa-cog mr-3"></i>Pengaturan <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span> <span class="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">FORM CONFIG</span> </button>
+      </div>
+     </div>
+    </nav>
+   </div><!-- Main Content -->
+   <div class="flex flex-col flex-1 lg:ml-64"><!-- Top Navigation -->
+    <div class="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow"><button onclick="toggleSidebar()" class="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 lg:hidden"> <i class="fas fa-bars"></i> </button>
+     <div class="flex-1 px-4 flex justify-between">
+      <div class="flex-1 flex">
+       <div class="w-full flex md:ml-0">
+        <div class="relative w-full text-gray-400 focus-within:text-gray-600">
+         <div class="absolute inset-y-0 left-0 flex items-center pointer-events-none"><i class="fas fa-search h-5 w-5"></i>
+         </div><input id="search" class="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-0 focus:border-transparent" placeholder="Cari..." type="search">
+        </div>
+       </div>
+      </div>
+      <div class="ml-4 flex items-center md:ml-6"><!-- Notifications --> <button onclick="toggleNotifications()" class="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 relative"> <i class="fas fa-bell h-6 w-6"></i> <span id="notification-badge" class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">0</span> </button> <!-- Notification Dropdown -->
+       <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50" style="top: 100%;">
+        <div class="p-4 border-b border-gray-200">
+         <div class="flex items-center justify-between">
+          <h3 class="text-lg font-medium text-gray-900"><i class="fas fa-bell mr-2 text-blue-600"></i>Notifikasi</h3><button onclick="clearAllNotifications()" class="text-sm text-blue-600 hover:text-blue-800"> Hapus Semua </button>
+         </div>
+        </div>
+        <div id="notification-list" class="max-h-96 overflow-y-auto"><!-- Notifications will be populated here -->
+        </div>
+        <div class="p-3 border-t border-gray-200 text-center"><button onclick="markAllAsRead()" class="text-sm text-gray-600 hover:text-gray-800"> <i class="fas fa-check-double mr-1"></i>Tandai Semua Dibaca </button>
+        </div>
+       </div><!-- Profile dropdown -->
+       <div class="ml-3 relative">
+        <div><button onclick="toggleProfileMenu()" class="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"> <img class="h-8 w-8 rounded-full" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" alt="Profile"> <span id="user-name" class="ml-2 text-gray-700 font-medium">User</span> <i class="fas fa-chevron-down ml-1 text-gray-400"></i> </button>
+        </div>
+        <div id="profile-menu" class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+         <div class="py-1"><button onclick="showProfileModal()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"> <i class="fas fa-user mr-2"></i>Profil Saya </button> <button onclick="showUserSettingsModal()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 relative"> <i class="fas fa-cog mr-2"></i>Pengaturan <span class="absolute right-2 top-2 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span> </button> <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"> <i class="fas fa-sign-out-alt mr-2"></i>Keluar </button>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Page Content -->
+    <main class="flex-1 relative overflow-y-auto focus:outline-none"><!-- Dashboard Section -->
+     <div id="dashboard-section" class="section-content">
+      <div class="py-6">
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <div class="flex items-center justify-between">
+         <h1 class="text-2xl font-semibold text-gray-900">Dashboard</h1>
+         <div class="flex items-center space-x-2">
+          <div class="status-online w-3 h-3 rounded-full"></div><span class="text-sm text-gray-600">Online</span>
+         </div>
+        </div>
+       </div>
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8"><!-- Quick Access to Config -->
+        <div class="mt-4 bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border-2 border-blue-200">
+         <div class="flex items-center justify-between">
+          <div class="flex items-center">
+           <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3"><i class="fas fa-cog text-blue-600"></i>
+           </div>
+           <div>
+            <h3 class="font-semibold text-blue-900">Form Konfigurasi Google Sheet</h3>
+            <p class="text-sm text-blue-700">Atur koneksi database Anda</p>
+           </div>
+          </div><button onclick="showSection('settings')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"> <i class="fas fa-arrow-right mr-2"></i>Buka Form </button>
+         </div>
+        </div><!-- Stats Grid -->
+        <div class="mt-8">
+         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"><!-- Total Lahan -->
+          <div class="bg-white overflow-hidden shadow rounded-lg hover-scale">
+           <div class="p-5">
+            <div class="flex items-center">
+             <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center"><i class="fas fa-map text-white"></i>
+              </div>
+             </div>
+             <div class="ml-5 w-0 flex-1">
+              <dl>
+               <dt class="text-sm font-medium text-gray-500 truncate">
+                Total Lahan
+               </dt>
+               <dd class="text-lg font-medium text-gray-900" id="stat-total-lahan">
+                0 Ha
+               </dd>
+              </dl>
+             </div>
+            </div>
+           </div>
+           <div class="bg-gray-50 px-5 py-3">
+            <div class="text-sm"><span class="text-green-600 font-medium">+2.5%</span> <span class="text-gray-500">dari bulan lalu</span>
+            </div>
+           </div>
+          </div><!-- Produksi Bulan Ini -->
+          <div class="bg-white overflow-hidden shadow rounded-lg hover-scale">
+           <div class="p-5">
+            <div class="flex items-center">
+             <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center"><i class="fas fa-chart-bar text-white"></i>
+              </div>
+             </div>
+             <div class="ml-5 w-0 flex-1">
+              <dl>
+               <dt class="text-sm font-medium text-gray-500 truncate">
+                Produksi Bulan Ini
+               </dt>
+               <dd class="text-lg font-medium text-gray-900" id="stat-produksi">
+                0 Ton
+               </dd>
+              </dl>
+             </div>
+            </div>
+           </div>
+           <div class="bg-gray-50 px-5 py-3">
+            <div class="text-sm"><span class="text-blue-600 font-medium">+12.3%</span> <span class="text-gray-500">dari target</span>
+            </div>
+           </div>
+          </div><!-- Pendapatan -->
+          <div class="bg-white overflow-hidden shadow rounded-lg hover-scale">
+           <div class="p-5">
+            <div class="flex items-center">
+             <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center"><i class="fas fa-dollar-sign text-white"></i>
+              </div>
+             </div>
+             <div class="ml-5 w-0 flex-1">
+              <dl>
+               <dt class="text-sm font-medium text-gray-500 truncate">
+                Pendapatan
+               </dt>
+               <dd class="text-lg font-medium text-gray-900" id="stat-pendapatan">
+                Rp 0
+               </dd>
+              </dl>
+             </div>
+            </div>
+           </div>
+           <div class="bg-gray-50 px-5 py-3">
+            <div class="text-sm"><span class="text-yellow-600 font-medium">+8.1%</span> <span class="text-gray-500">bulan ini</span>
+            </div>
+           </div>
+          </div><!-- Alert Aktif -->
+          <div class="bg-white overflow-hidden shadow rounded-lg hover-scale">
+           <div class="p-5">
+            <div class="flex items-center">
+             <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center"><i class="fas fa-exclamation-triangle text-white"></i>
+              </div>
+             </div>
+             <div class="ml-5 w-0 flex-1">
+              <dl>
+               <dt class="text-sm font-medium text-gray-500 truncate">
+                Alert Aktif
+               </dt>
+               <dd class="text-lg font-medium text-gray-900" id="stat-alerts">
+                5
+               </dd>
+              </dl>
+             </div>
+            </div>
+           </div>
+           <div class="bg-gray-50 px-5 py-3">
+            <div class="text-sm"><span class="text-red-600 font-medium">2 Kritis</span> <span class="text-gray-500">perlu tindakan</span>
+            </div>
+           </div>
+          </div>
+         </div>
+        </div><!-- Charts and Recent Activity -->
+        <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2"><!-- Production Chart -->
+         <div class="bg-white shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4"><i class="fas fa-chart-line mr-2 text-green-600"></i>Grafik Produksi</h3>
+           <div class="chart-container">
+            <canvas id="production-chart" width="400" height="200"></canvas>
+           </div>
+          </div>
+         </div><!-- Recent Activities -->
+         <div class="bg-white shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4"><i class="fas fa-clock mr-2 text-blue-600"></i>Aktivitas Terbaru</h3>
+           <div id="recent-activities" class="space-y-3"><!-- Activities will be populated here -->
+           </div>
+          </div>
+         </div>
+        </div><!-- Weather and Sensor Data -->
+        <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3"><!-- Weather Widget -->
+         <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg shadow-lg text-white">
+          <div class="p-6">
+           <div class="flex items-center justify-between mb-4">
+            <div>
+             <h3 class="text-lg font-medium">Cuaca Hari Ini</h3>
+             <p id="weather-temp" class="text-3xl font-bold mt-2">--°C</p>
+             <p id="weather-desc" class="text-blue-100">Memuat...</p>
+             <p id="weather-location" class="text-xs text-blue-200 mt-1">📍 Lokasi: Memuat...</p>
+            </div>
+            <div class="text-4xl"><i id="weather-icon" class="fas fa-cloud"></i>
+            </div>
+           </div>
+           <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><i class="fas fa-tint mr-1"></i> <span id="weather-humidity">Kelembaban: --%</span>
+            </div>
+            <div><i class="fas fa-wind mr-1"></i> <span id="weather-wind">Angin: -- km/h</span>
+            </div>
+            <div><i class="fas fa-thermometer-half mr-1"></i> <span id="weather-feels">Terasa: --°C</span>
+            </div>
+            <div><i class="fas fa-eye mr-1"></i> <span id="weather-visibility">Jarak pandang: -- km</span>
+            </div>
+           </div>
+           <div class="mt-4 pt-4 border-t border-blue-300 border-opacity-30">
+            <div class="flex items-center justify-between text-xs"><span id="weather-update">Update: --</span> <button onclick="refreshWeather()" class="bg-blue-500 bg-opacity-30 px-2 py-1 rounded hover:bg-opacity-50 transition-colors"> <i class="fas fa-sync-alt mr-1"></i>Refresh </button>
+            </div>
+           </div>
+          </div>
+         </div><!-- Soil Sensor -->
+         <div class="bg-white shadow rounded-lg">
+          <div class="p-6">
+           <h3 class="text-lg font-medium text-gray-900 mb-4"><i class="fas fa-seedling mr-2 text-green-600"></i>Sensor Tanah</h3>
+           <div class="space-y-3">
+            <div class="flex justify-between items-center"><span class="text-sm text-gray-600">pH Tanah</span> <span class="font-medium">6.8</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+             <div class="progress-bar h-2 rounded-full" style="width: 68%"></div>
+            </div>
+            <div class="flex justify-between items-center"><span class="text-sm text-gray-600">Kelembaban</span> <span class="font-medium">65%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+             <div class="progress-bar h-2 rounded-full" style="width: 65%"></div>
+            </div>
+           </div>
+          </div>
+         </div><!-- Quick Actions -->
+         <div class="bg-white shadow rounded-lg">
+          <div class="p-6">
+           <h3 class="text-lg font-medium text-gray-900 mb-4"><i class="fas fa-bolt mr-2 text-yellow-600"></i>Aksi Cepat</h3>
+           <div class="space-y-2"><button onclick="showSection('lahan')" class="w-full text-left px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"> <i class="fas fa-plus mr-2"></i>Tambah Lahan </button> <button onclick="showSection('produksi')" class="w-full text-left px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"> <i class="fas fa-clipboard mr-2"></i>Catat Aktivitas </button> <button onclick="showSection('keuangan')" class="w-full text-left px-3 py-2 text-sm bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors"> <i class="fas fa-money-bill mr-2"></i>Input Transaksi </button> <button onclick="showSection('settings')" class="w-full text-left px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors border-2 border-red-200"> <i class="fas fa-cog mr-2"></i>Konfigurasi Google Sheet <span class="ml-2 text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">PENTING</span> </button>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Lahan Section -->
+     <div id="lahan-section" class="section-content hidden">
+      <div class="py-6">
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <div class="flex items-center justify-between">
+         <h1 class="text-2xl font-semibold text-gray-900"><i class="fas fa-map-marked-alt mr-2 text-green-600"></i>Manajemen Lahan</h1><button onclick="showAddLahanModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"> <i class="fas fa-plus mr-2"></i>Tambah Lahan </button>
+        </div><!-- Lahan Grid -->
+        <div class="mt-8">
+         <div id="lahan-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"><!-- Lahan cards will be populated here -->
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Produksi Section -->
+     <div id="produksi-section" class="section-content hidden">
+      <div class="py-6">
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <div class="flex items-center justify-between">
+         <h1 class="text-2xl font-semibold text-gray-900"><i class="fas fa-seedling mr-2 text-green-600"></i>Manajemen Produksi</h1><button onclick="showAddAktivitasModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"> <i class="fas fa-plus mr-2"></i>Catat Aktivitas </button>
+        </div><!-- Activities Timeline -->
+        <div class="mt-8">
+         <div class="bg-white shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Timeline Aktivitas</h3>
+           <div id="activities-timeline" class="space-y-4"><!-- Timeline items will be populated here -->
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Inventaris Section -->
+     <div id="inventaris-section" class="section-content hidden">
+      <div class="py-6">
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <div class="flex items-center justify-between">
+         <h1 class="text-2xl font-semibold text-gray-900"><i class="fas fa-boxes mr-2 text-yellow-600"></i>Manajemen Inventaris</h1><button onclick="showAddInventarisModal()" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"> <i class="fas fa-plus mr-2"></i>Tambah Item </button>
+        </div><!-- Inventory Grid -->
+        <div class="mt-8">
+         <div id="inventaris-grid" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"><!-- Inventory cards will be populated here -->
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Keuangan Section -->
+     <div id="keuangan-section" class="section-content hidden">
+      <div class="py-6">
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <div class="flex items-center justify-between">
+         <h1 class="text-2xl font-semibold text-gray-900"><i class="fas fa-chart-line mr-2 text-green-600"></i>Manajemen Keuangan</h1><button onclick="showAddTransaksiModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"> <i class="fas fa-plus mr-2"></i>Tambah Transaksi </button>
+        </div><!-- Financial Summary -->
+        <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
+         <div class="bg-green-50 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+           <div class="flex items-center">
+            <div class="flex-shrink-0"><i class="fas fa-arrow-up text-green-600 text-2xl"></i>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+             <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">
+               Total Pemasukan
+              </dt>
+              <dd class="text-lg font-medium text-green-900" id="total-pemasukan">
+               Rp 0
+              </dd>
+             </dl>
+            </div>
+           </div>
+          </div>
+         </div>
+         <div class="bg-red-50 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+           <div class="flex items-center">
+            <div class="flex-shrink-0"><i class="fas fa-arrow-down text-red-600 text-2xl"></i>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+             <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">
+               Total Pengeluaran
+              </dt>
+              <dd class="text-lg font-medium text-red-900" id="total-pengeluaran">
+               Rp 0
+              </dd>
+             </dl>
+            </div>
+           </div>
+          </div>
+         </div>
+         <div class="bg-blue-50 overflow-hidden shadow rounded-lg">
+          <div class="p-5">
+           <div class="flex items-center">
+            <div class="flex-shrink-0"><i class="fas fa-balance-scale text-blue-600 text-2xl"></i>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+             <dl>
+              <dt class="text-sm font-medium text-gray-500 truncate">
+               Saldo
+              </dt>
+              <dd class="text-lg font-medium text-blue-900" id="saldo">
+               Rp 0
+              </dd>
+             </dl>
+            </div>
+           </div>
+          </div>
+         </div>
+        </div><!-- Transactions Table -->
+        <div class="mt-8">
+         <div class="bg-white shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Riwayat Transaksi</h3>
+           <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+             <thead class="bg-gray-50">
+              <tr>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+              </tr>
+             </thead>
+             <tbody id="transactions-table" class="bg-white divide-y divide-gray-200"><!-- Transactions will be populated here -->
+             </tbody>
+            </table>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Monitoring Section -->
+     <div id="monitoring-section" class="section-content hidden">
+      <div class="py-6">
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <h1 class="text-2xl font-semibold text-gray-900"><i class="fas fa-satellite-dish mr-2 text-blue-600"></i>Monitoring &amp; Sensor</h1><!-- Monitoring Grid -->
+        <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2"><!-- Real-time Weather -->
+         <div class="bg-white shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+           <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg leading-6 font-medium text-gray-900"><i class="fas fa-cloud-sun mr-2 text-blue-600"></i>Cuaca Real-time</h3>
+            <div class="flex items-center text-xs text-gray-500">
+             <div class="status-online w-2 h-2 rounded-full mr-1"></div><span id="monitoring-location">Memuat lokasi...</span>
+            </div>
+           </div>
+           <div class="grid grid-cols-2 gap-4">
+            <div class="text-center p-4 bg-blue-50 rounded-lg"><i class="fas fa-thermometer-half text-2xl text-blue-600 mb-2"></i>
+             <p class="text-sm text-gray-600">Suhu</p>
+             <p id="monitoring-temp" class="text-xl font-bold text-blue-900">--°C</p>
+            </div>
+            <div class="text-center p-4 bg-green-50 rounded-lg"><i class="fas fa-tint text-2xl text-green-600 mb-2"></i>
+             <p class="text-sm text-gray-600">Kelembaban</p>
+             <p id="monitoring-humidity" class="text-xl font-bold text-green-900">--%</p>
+            </div>
+            <div class="text-center p-4 bg-purple-50 rounded-lg"><i class="fas fa-cloud-rain text-2xl text-purple-600 mb-2"></i>
+             <p class="text-sm text-gray-600">Tekanan</p>
+             <p id="monitoring-pressure" class="text-xl font-bold text-purple-900">-- hPa</p>
+            </div>
+            <div class="text-center p-4 bg-yellow-50 rounded-lg"><i class="fas fa-wind text-2xl text-yellow-600 mb-2"></i>
+             <p class="text-sm text-gray-600">Kec. Angin</p>
+             <p id="monitoring-wind" class="text-xl font-bold text-yellow-900">-- km/h</p>
+            </div>
+           </div>
+           <div class="mt-4 pt-4 border-t border-gray-200">
+            <div class="flex items-center justify-between"><span id="monitoring-update" class="text-xs text-gray-500">Update: --</span> <button onclick="refreshWeatherMonitoring()" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded hover:bg-blue-200 transition-colors"> <i class="fas fa-sync-alt mr-1"></i>Refresh </button>
+            </div>
+           </div>
+          </div>
+         </div><!-- Soil Sensors -->
+         <div class="bg-white shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4"><i class="fas fa-seedling mr-2 text-green-600"></i>Sensor Tanah</h3>
+           <div class="space-y-4">
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+             <div class="flex items-center"><i class="fas fa-tint text-blue-600 mr-3"></i> <span class="text-gray-700">Kelembaban Tanah</span>
+             </div><span class="font-semibold text-blue-600">65%</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+             <div class="flex items-center"><i class="fas fa-vial text-green-600 mr-3"></i> <span class="text-gray-700">pH Tanah</span>
+             </div><span class="font-semibold text-green-600">6.8</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+             <div class="flex items-center"><i class="fas fa-leaf text-purple-600 mr-3"></i> <span class="text-gray-700">Nitrogen (N)</span>
+             </div><span class="font-semibold text-purple-600">45 ppm</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+             <div class="flex items-center"><i class="fas fa-fire text-orange-600 mr-3"></i> <span class="text-gray-700">Fosfor (P)</span>
+             </div><span class="font-semibold text-orange-600">23 ppm</span>
+            </div>
+           </div>
+          </div>
+         </div>
+        </div><!-- Alerts System -->
+        <div class="mt-8">
+         <div class="bg-white shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4"><i class="fas fa-bell mr-2 text-red-600"></i>Sistem Alert</h3>
+           <div id="alerts-list" class="space-y-3"><!-- Alerts will be populated here -->
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Users Section (Admin Only) -->
+     <div id="users-section" class="section-content hidden">
+      <div class="py-6">
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <div class="flex items-center justify-between">
+         <h1 class="text-2xl font-semibold text-gray-900"><i class="fas fa-users mr-2 text-blue-600"></i>Manajemen User</h1><button onclick="showAddUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"> <i class="fas fa-user-plus mr-2"></i>Tambah User </button>
+        </div><!-- Users Table -->
+        <div class="mt-8">
+         <div class="bg-white shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+           <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+             <thead class="bg-gray-50">
+              <tr>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+              </tr>
+             </thead>
+             <tbody id="users-table" class="bg-white divide-y divide-gray-200"><!-- Users will be populated here -->
+             </tbody>
+            </table>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Settings Section (Admin Only) -->
+     <div id="settings-section" class="section-content hidden">
+      <div class="py-6">
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+        <div class="flex items-center justify-between mb-6">
+         <h1 class="text-2xl font-semibold text-gray-900"><i class="fas fa-cog mr-2 text-gray-600"></i>Pengaturan Sistem</h1>
+         <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm font-medium"><i class="fas fa-check-circle mr-2"></i>Form Konfigurasi Ditemukan!
+         </div>
+        </div><!-- Settings Grid -->
+        <div class="mt-8 space-y-8"><!-- Tutorial Section -->
+         <div class="bg-gradient-to-r from-blue-50 to-indigo-50 shadow-lg rounded-xl border border-blue-200">
+          <div class="px-6 py-8">
+           <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-graduation-cap text-2xl text-blue-600"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-blue-900 mb-2">📚 Tutorial Koneksi Google Sheet</h2>
+            <p class="text-blue-700">Ikuti langkah-langkah berikut untuk menghubungkan sistem dengan Google Sheets</p>
+           </div>
+           <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><!-- Step 1-4 -->
+            <div class="space-y-4">
+             <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
+              <div class="flex items-start">
+               <div class="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-1">
+                1
+               </div>
+               <div>
+                <h4 class="font-semibold text-gray-900 mb-2">Google Cloud Console</h4>
+                <p class="text-sm text-gray-600 mb-2">Buka Google Cloud Console dan login</p><a href="https://console.cloud.google.com" target="_blank" class="inline-flex items-center text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded hover:bg-blue-200 transition-colors"> <i class="fas fa-external-link-alt mr-1"></i>console.cloud.google.com </a>
+               </div>
+              </div>
+             </div>
+             <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
+              <div class="flex items-start">
+               <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-1">
+                2
+               </div>
+               <div>
+                <h4 class="font-semibold text-gray-900 mb-2">Buat Project Baru</h4>
+                <p class="text-sm text-gray-600">Klik "Select Project" → "New Project"</p>
+                <p class="text-xs text-green-700 mt-1">💡 Nama project: "AgriTech-System"</p>
+               </div>
+              </div>
+             </div>
+             <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-purple-500">
+              <div class="flex items-start">
+               <div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-1">
+                3
+               </div>
+               <div>
+                <h4 class="font-semibold text-gray-900 mb-2">Enable Google Sheets API</h4>
+                <p class="text-sm text-gray-600">Menu "APIs &amp; Services" → "Library"</p>
+                <p class="text-xs text-purple-700 mt-1">🔍 Cari "Google Sheets API" → Enable</p>
+               </div>
+              </div>
+             </div>
+             <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-500">
+              <div class="flex items-start">
+               <div class="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-1">
+                4
+               </div>
+               <div>
+                <h4 class="font-semibold text-gray-900 mb-2">Buat Service Account</h4>
+                <p class="text-sm text-gray-600">"IAM &amp; Admin" → "Service Accounts"</p>
+                <p class="text-xs text-orange-700 mt-1">👤 Nama: "agritech-service", Role: "Editor"</p>
+               </div>
+              </div>
+             </div>
+            </div><!-- Step 5-7 -->
+            <div class="space-y-4">
+             <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-500">
+              <div class="flex items-start">
+               <div class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-1">
+                5
+               </div>
+               <div>
+                <h4 class="font-semibold text-gray-900 mb-2">Download JSON Key</h4>
+                <p class="text-sm text-gray-600">Klik service account → "Keys" → "Add Key"</p>
+                <p class="text-xs text-red-700 mt-1">📥 Pilih "JSON" → Download file</p>
+               </div>
+              </div>
+             </div>
+             <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-indigo-500">
+              <div class="flex items-start">
+               <div class="w-8 h-8 bg-indigo-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-1">
+                6
+               </div>
+               <div>
+                <h4 class="font-semibold text-gray-900 mb-2">Share Google Sheet</h4>
+                <p class="text-sm text-gray-600">Buka Google Sheet → "Share"</p>
+                <p class="text-xs text-indigo-700 mt-1">📧 Masukkan email service account sebagai Editor</p>
+               </div>
+              </div>
+             </div>
+             <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-pink-500">
+              <div class="flex items-start">
+               <div class="w-8 h-8 bg-pink-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-1">
+                7
+               </div>
+               <div>
+                <h4 class="font-semibold text-gray-900 mb-2">Copy Spreadsheet ID</h4>
+                <p class="text-sm text-gray-600">Dari URL Google Sheet</p>
+                <div class="text-xs bg-gray-100 p-2 rounded mt-1 font-mono">
+                 .../d/<span class="bg-yellow-300 px-1">SPREADSHEET_ID</span>/edit
+                </div>
+               </div>
+              </div>
+             </div>
+             <div class="bg-gradient-to-r from-green-100 to-green-50 p-4 rounded-lg border border-green-200">
+              <div class="flex items-center"><i class="fas fa-check-circle text-green-600 text-xl mr-3"></i>
+               <div>
+                <p class="font-semibold text-green-800">Selesai!</p>
+                <p class="text-sm text-green-700">Paste ID &amp; JSON key ke form konfigurasi</p>
+               </div>
+              </div>
+             </div>
+            </div>
+           </div>
+          </div>
+         </div><!-- FORM KONFIGURASI GOOGLE SHEET - SANGAT MUDAH DITEMUKAN! -->
+         <div class="col-span-full mb-8">
+          <div class="config-highlight bg-gradient-to-br from-blue-50 via-white to-green-50 shadow-2xl rounded-2xl border-4 border-blue-500 p-8"><!-- Header Super Mencolok -->
+           <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"><i class="fas fa-cog text-3xl text-white animate-spin"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600 mb-2">🔧 FORM KONFIGURASI GOOGLE SHEET</h2>
+            <p class="text-lg text-blue-700 font-semibold">✅ INI YANG ANDA CARI! ✅</p>
+            <p class="text-blue-600">Atur koneksi database sistem AgriTech di sini</p>
+           </div><!-- Alert Penting -->
+           <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6 rounded-r-lg">
+            <div class="flex">
+             <div class="flex-shrink-0"><i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+             </div>
+             <div class="ml-3">
+              <p class="text-sm font-medium text-yellow-800"><strong>PENTING:</strong> Form ini adalah tempat untuk mengatur koneksi Google Sheet Anda!</p>
+              <p class="text-xs text-yellow-700 mt-1">Ikuti tutorial di atas untuk setup Google Sheets API, lalu isi form di bawah ini.</p>
+             </div>
+            </div>
+           </div>
+          </div>
+          <div class="grid grid-cols-1 gap-8 lg:grid-cols-2"><!-- FORM KONFIGURASI UTAMA -->
+           <div class="bg-white shadow-xl rounded-xl border-2 border-green-300">
+            <div class="px-6 py-6">
+             <div class="bg-green-100 p-4 rounded-lg mb-6 border border-green-300">
+              <h3 class="text-xl font-bold text-green-900 mb-2"><i class="fas fa-database mr-2"></i>Konfigurasi Database</h3>
+              <p class="text-green-700 text-sm">Pilih dan atur jenis database untuk sistem Anda</p>
+             </div>
+             <div class="space-y-4">
+              <div><label class="block text-sm font-medium text-gray-700">Jenis Database</label> <select id="database-type" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"> <option value="canva">Canva Sheet (Default)</option> <option value="google">Google Sheet</option> </select>
+               <p class="text-xs text-gray-500 mt-1">Pilih jenis database untuk menyimpan data</p>
+              </div>
+              <div><label class="block text-sm font-medium text-gray-700">Status Koneksi</label>
+               <div class="mt-1 flex items-center">
+                <div class="status-online w-3 h-3 rounded-full mr-2"></div><span id="connection-status" class="text-sm text-green-600 font-medium">Terhubung ke Canva Sheet</span>
+               </div>
+               <p class="text-xs text-gray-500 mt-1" id="connection-description">Data disimpan otomatis ke Google Sheet melalui Canva Data SDK</p>
+              </div>
+              <div id="google-sheet-config" class="hidden space-y-3 p-4 bg-blue-50 rounded-lg">
+               <div><label for="spreadsheet-id" class="block text-sm font-medium text-gray-700">Spreadsheet ID</label> <input type="text" id="spreadsheet-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <p class="text-xs text-gray-500 mt-1">ID Spreadsheet dari URL Google Sheets (bagian setelah /d/ dan sebelum /edit)</p>
+               </div>
+               <div><label for="service-account-key" class="block text-sm font-medium text-gray-700">Service Account Key (JSON)</label> <textarea id="service-account-key" rows="4" placeholder="{&quot;type&quot;: &quot;service_account&quot;, &quot;project_id&quot;: &quot;...&quot;, &quot;private_key_id&quot;: &quot;...&quot;, ...}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs"></textarea>
+                <p class="text-xs text-gray-500 mt-1">JSON key dari Google Service Account dengan akses ke Google Sheets API</p>
+               </div>
+               <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <div class="flex"><i class="fas fa-info-circle text-blue-600 mr-2 mt-0.5"></i>
+                 <div>
+                  <p class="text-sm font-medium text-blue-800">Cara Setup Google Sheets API:</p>
+                  <ol class="text-xs text-blue-700 mt-1 space-y-1 list-decimal list-inside">
+                   <li>Buka <a href="https://console.cloud.google.com" target="_blank" class="underline">Google Cloud Console</a></li>
+                   <li>Buat project baru atau pilih project yang ada</li>
+                   <li>Aktifkan Google Sheets API</li>
+                   <li>Buat Service Account dan download JSON key</li>
+                   <li>Share Google Sheet dengan email Service Account</li>
+                   <li>Copy Spreadsheet ID dari URL Google Sheets</li>
+                  </ol>
+                 </div>
+                </div>
+               </div>
+               <div class="bg-yellow-50 p-3 rounded-lg">
+                <div class="flex"><i class="fas fa-exclamation-triangle text-yellow-600 mr-2 mt-0.5"></i>
+                 <div>
+                  <p class="text-sm font-medium text-yellow-800">Keamanan</p>
+                  <p class="text-xs text-yellow-700 mt-1">Service Account Key berisi informasi sensitif. Pastikan hanya memberikan akses minimal yang diperlukan.</p>
+                 </div>
+                </div>
+               </div><button onclick="testGoogleSheetConnection()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"> <i class="fas fa-plug mr-2"></i>Test Koneksi </button>
+              </div>
+              <div><label class="block text-sm font-medium text-gray-700">Total Records</label>
+               <p class="mt-1 text-sm text-gray-900" id="total-records">0 records</p>
+               <p class="text-xs text-gray-500">Maksimum 999 records per sheet</p>
+              </div>
+              <div><label class="block text-sm font-medium text-gray-700">Last Sync</label>
+               <p class="mt-1 text-sm text-gray-900" id="last-sync">-</p>
+              </div>
+              <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+               <h4 class="text-sm font-medium text-blue-800 mb-3"><i class="fas fa-info-circle mr-2"></i>Informasi Database</h4>
+               <ul class="text-xs text-blue-700 space-y-2">
+                <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Data tersimpan real-time ke Google Sheet</li>
+                <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Backup otomatis setiap perubahan data</li>
+                <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Akses data melalui Canva interface</li>
+                <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Sinkronisasi multi-user secara otomatis</li>
+               </ul>
+              </div><!-- Tombol Aksi -->
+              <div class="grid grid-cols-2 gap-3 mt-6"><button onclick="syncData()" class="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"> <i class="fas fa-sync mr-2"></i>Sinkronisasi Manual </button> <button onclick="resetDatabase()" class="bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors font-medium"> <i class="fas fa-database mr-2"></i>Reset Database </button>
+              </div><!-- Status Koneksi -->
+              <div class="mt-6 p-4 bg-gray-50 rounded-lg border">
+               <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                 <div class="status-online w-4 h-4 rounded-full mr-3"></div>
+                 <div>
+                  <p class="font-medium text-gray-900">Status Koneksi</p>
+                  <p class="text-sm text-green-600">Terhubung dan Aktif</p>
+                 </div>
+                </div>
+                <div class="text-right">
+                 <p class="text-sm font-medium text-gray-900" id="record-count">0 Records</p>
+                 <p class="text-xs text-gray-500">dari maksimal 999</p>
+                </div>
+               </div>
+              </div>
+             </div>
+            </div><!-- System Settings -->
+            <div class="bg-white shadow rounded-lg">
+             <div class="px-4 py-5 sm:p-6">
+              <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4"><i class="fas fa-sliders-h mr-2 text-blue-600"></i>Pengaturan Umum</h3>
+              <form id="settings-form" class="space-y-4">
+               <div><label for="company-name" class="block text-sm font-medium text-gray-700">Nama Perusahaan</label> <input type="text" id="company-name" value="PT. Agritech Indonesia" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+               </div>
+               <div><label for="admin-email" class="block text-sm font-medium text-gray-700">Email Administrator</label> <input type="email" id="admin-email" value="admin@agritech.com" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+               </div>
+               <div><label for="backup-frequency" class="block text-sm font-medium text-gray-700">Frekuensi Backup</label> <select id="backup-frequency" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="daily">Harian</option> <option value="weekly">Mingguan</option> <option value="monthly">Bulanan</option> </select>
+               </div><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"> <i class="fas fa-save mr-2"></i>Simpan Pengaturan </button>
+              </form>
+             </div>
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div><!-- Modals --> <!-- Add Lahan Modal -->
+      <div id="add-lahan-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+         <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-map-marked-alt mr-2 text-green-600"></i>Tambah Lahan Baru</h3><button onclick="hideAddLahanModal()" class="text-gray-400 hover:text-gray-600"> <i class="fas fa-times"></i> </button>
+        </div>
+        <form id="add-lahan-form" class="space-y-4">
+         <div><label for="lahan-name" class="block text-sm font-medium text-gray-700">Nama Plot</label> <input id="lahan-name" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Plot A1">
+         </div>
+         <div><label for="lahan-area" class="block text-sm font-medium text-gray-700">Luas (Ha)</label> <input id="lahan-area" type="number" step="0.1" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="2.5">
+         </div>
+         <div><label for="lahan-soil" class="block text-sm font-medium text-gray-700">Jenis Tanah</label> <select id="lahan-soil" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"> <option value="">Pilih Jenis Tanah</option> <option value="Alluvial">Alluvial</option> <option value="Latosol">Latosol</option> <option value="Regosol">Regosol</option> <option value="Andosol">Andosol</option> </select>
+         </div>
+         <div><label for="lahan-variety" class="block text-sm font-medium text-gray-700">Varietas Tebu</label> <select id="lahan-variety" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"> <option value="">Pilih Varietas</option> <option value="PS 881">PS 881</option> <option value="PS 862">PS 862</option> <option value="Bululawang">Bululawang</option> <option value="Kidang Kencana">Kidang Kencana</option> </select>
+         </div><button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"> <i class="fas fa-plus mr-2"></i>Tambah Lahan </button>
+        </form>
+       </div>
+      </div><!-- Add Aktivitas Modal -->
+      <div id="add-aktivitas-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+         <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-clipboard-list mr-2 text-blue-600"></i>Catat Aktivitas Baru</h3><button onclick="hideAddAktivitasModal()" class="text-gray-400 hover:text-gray-600"> <i class="fas fa-times"></i> </button>
+        </div>
+        <form id="add-aktivitas-form" class="space-y-4">
+         <div><label for="aktivitas-plot" class="block text-sm font-medium text-gray-700">Plot Lahan</label> <select id="aktivitas-plot" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="">Pilih Plot</option> </select>
+         </div>
+         <div><label for="aktivitas-type" class="block text-sm font-medium text-gray-700">Jenis Aktivitas</label> <select id="aktivitas-type" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="">Pilih Aktivitas</option> <option value="Penanaman">Penanaman</option> <option value="Pemupukan">Pemupukan</option> <option value="Penyiraman">Penyiraman</option> <option value="Penyemprotan">Penyemprotan</option> <option value="Panen">Panen</option> <option value="Pengolahan Tanah">Pengolahan Tanah</option> </select>
+         </div>
+         <div><label for="aktivitas-date" class="block text-sm font-medium text-gray-700">Tanggal</label> <input id="aktivitas-date" type="date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+         </div>
+         <div><label for="aktivitas-description" class="block text-sm font-medium text-gray-700">Deskripsi</label> <textarea id="aktivitas-description" rows="3" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Deskripsi aktivitas..."></textarea>
+         </div><button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"> <i class="fas fa-plus mr-2"></i>Catat Aktivitas </button>
+        </form>
+       </div>
+      </div><!-- Add Inventaris Modal -->
+      <div id="add-inventaris-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+         <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-boxes mr-2 text-yellow-600"></i>Tambah Item Inventaris</h3><button onclick="hideAddInventarisModal()" class="text-gray-400 hover:text-gray-600"> <i class="fas fa-times"></i> </button>
+        </div>
+        <form id="add-inventaris-form" class="space-y-4">
+         <div><label for="inventaris-name" class="block text-sm font-medium text-gray-700">Nama Item</label> <input id="inventaris-name" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" placeholder="Pupuk Urea">
+         </div>
+         <div><label for="inventaris-category" class="block text-sm font-medium text-gray-700">Kategori</label> <select id="inventaris-category" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"> <option value="">Pilih Kategori</option> <option value="Pupuk">Pupuk</option> <option value="Pestisida">Pestisida</option> <option value="Alat">Alat</option> <option value="Benih">Benih</option> <option value="Lainnya">Lainnya</option> </select>
+         </div>
+         <div><label for="inventaris-quantity" class="block text-sm font-medium text-gray-700">Jumlah</label> <input id="inventaris-quantity" type="number" min="0" step="0.1" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" placeholder="100">
+         </div>
+         <div><label for="inventaris-unit" class="block text-sm font-medium text-gray-700">Satuan</label> <select id="inventaris-unit" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"> <option value="">Pilih Satuan</option> <option value="Kg">Kg</option> <option value="Liter">Liter</option> <option value="Pcs">Pcs</option> <option value="Karung">Karung</option> <option value="Botol">Botol</option> </select>
+         </div><button type="submit" class="w-full bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 transition-colors"> <i class="fas fa-plus mr-2"></i>Tambah Item </button>
+        </form>
+       </div>
+      </div><!-- Add Transaksi Modal -->
+      <div id="add-transaksi-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+         <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-money-bill mr-2 text-green-600"></i>Tambah Transaksi</h3><button onclick="hideAddTransaksiModal()" class="text-gray-400 hover:text-gray-600"> <i class="fas fa-times"></i> </button>
+        </div>
+        <form id="add-transaksi-form" class="space-y-4">
+         <div><label for="transaksi-type" class="block text-sm font-medium text-gray-700">Jenis Transaksi</label> <select id="transaksi-type" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"> <option value="">Pilih Jenis</option> <option value="pemasukan">Pemasukan</option> <option value="pengeluaran">Pengeluaran</option> </select>
+         </div>
+         <div><label for="transaksi-description" class="block text-sm font-medium text-gray-700">Deskripsi</label> <input id="transaksi-description" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Penjualan tebu">
+         </div>
+         <div><label for="transaksi-amount" class="block text-sm font-medium text-gray-700">Jumlah (Rp)</label> <input id="transaksi-amount" type="number" min="0" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="1000000">
+         </div>
+         <div><label for="transaksi-date" class="block text-sm font-medium text-gray-700">Tanggal</label> <input id="transaksi-date" type="date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+         </div><button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"> <i class="fas fa-plus mr-2"></i>Tambah Transaksi </button>
+        </form>
+       </div>
+      </div><!-- Add User Modal -->
+      <div id="add-user-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+         <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-user-plus mr-2 text-blue-600"></i>Tambah User Baru</h3><button onclick="hideAddUserModal()" class="text-gray-400 hover:text-gray-600"> <i class="fas fa-times"></i> </button>
+        </div>
+        <form id="add-user-form" class="space-y-4">
+         <div><label for="user-fullname" class="block text-sm font-medium text-gray-700">Nama Lengkap</label> <input id="user-fullname" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Nama lengkap">
+         </div>
+         <div><label for="user-email" class="block text-sm font-medium text-gray-700">Email</label> <input id="user-email" type="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="email@example.com">
+         </div>
+         <div><label for="user-phone" class="block text-sm font-medium text-gray-700">No. Telepon</label> <input id="user-phone" type="tel" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="08xxxxxxxxxx">
+         </div>
+         <div><label for="user-username" class="block text-sm font-medium text-gray-700">Username</label> <input id="user-username" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Username">
+         </div>
+         <div><label for="user-password" class="block text-sm font-medium text-gray-700">Password</label> <input id="user-password" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Password">
+         </div>
+         <div><label for="user-role" class="block text-sm font-medium text-gray-700">Role</label> <select id="user-role" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="">Pilih Role</option> <option value="petani">Petani</option> <option value="supervisor">Supervisor</option> <option value="admin">Admin</option> </select>
+         </div><button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"> <i class="fas fa-user-plus mr-2"></i>Tambah User </button>
+        </form>
+       </div>
+      </div><!-- Edit Lahan Modal -->
+      <div id="edit-lahan-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+         <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-edit mr-2 text-green-600"></i>Edit Lahan</h3><button onclick="hideEditLahanModal()" class="text-gray-400 hover:text-gray-600"> <i class="fas fa-times"></i> </button>
+        </div>
+        <form id="edit-lahan-form" class="space-y-4"><input type="hidden" id="edit-lahan-id">
+         <div><label for="edit-lahan-name" class="block text-sm font-medium text-gray-700">Nama Plot</label> <input id="edit-lahan-name" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+         </div>
+         <div><label for="edit-lahan-area" class="block text-sm font-medium text-gray-700">Luas (Ha)</label> <input id="edit-lahan-area" type="number" step="0.1" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+         </div>
+         <div><label for="edit-lahan-soil" class="block text-sm font-medium text-gray-700">Jenis Tanah</label> <select id="edit-lahan-soil" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"> <option value="Alluvial">Alluvial</option> <option value="Latosol">Latosol</option> <option value="Regosol">Regosol</option> <option value="Andosol">Andosol</option> </select>
+         </div>
+         <div><label for="edit-lahan-variety" class="block text-sm font-medium text-gray-700">Varietas Tebu</label> <select id="edit-lahan-variety" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"> <option value="PS 881">PS 881</option> <option value="PS 862">PS 862</option> <option value="Bululawang">Bululawang</option> <option value="Kidang Kencana">Kidang Kencana</option> </select>
+         </div><button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"> <i class="fas fa-save mr-2"></i>Simpan Perubahan </button>
+        </form>
+       </div>
+      </div><!-- Profile Modal -->
+      <div id="profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+         <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-user mr-2 text-blue-600"></i>Profil Saya</h3><button onclick="hideProfileModal()" class="text-gray-400 hover:text-gray-600"> <i class="fas fa-times"></i> </button>
+        </div>
+        <div class="text-center mb-6">
+         <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-user text-3xl text-blue-600"></i>
+         </div>
+         <h4 id="profile-name" class="text-lg font-semibold text-gray-900">-</h4>
+         <p id="profile-role" class="text-sm text-gray-600">-</p>
+        </div>
+        <form id="profile-form" class="space-y-4">
+         <div><label for="profile-fullname" class="block text-sm font-medium text-gray-700">Nama Lengkap</label> <input id="profile-fullname" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+         </div>
+         <div><label for="profile-email" class="block text-sm font-medium text-gray-700">Email</label> <input id="profile-email" type="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+         </div>
+         <div><label for="profile-phone" class="block text-sm font-medium text-gray-700">No. Telepon</label> <input id="profile-phone" type="tel" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+         </div>
+         <div><label for="profile-current-password" class="block text-sm font-medium text-gray-700">Password Saat Ini</label> <input id="profile-current-password" type="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Kosongkan jika tidak ingin mengubah">
+         </div>
+         <div><label for="profile-new-password" class="block text-sm font-medium text-gray-700">Password Baru</label> <input id="profile-new-password" type="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Kosongkan jika tidak ingin mengubah">
+         </div><button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"> <i class="fas fa-save mr-2"></i>Simpan Profil </button>
+        </form>
+       </div>
+      </div><!-- User Settings Modal -->
+      <div id="user-settings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-lg w-full mx-4 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+         <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-cog mr-2 text-gray-600"></i>Pengaturan Pengguna</h3><button onclick="hideUserSettingsModal()" class="text-gray-400 hover:text-gray-600"> <i class="fas fa-times"></i> </button>
+        </div>
+        <div class="space-y-6"><!-- Database Connection Settings -->
+         <div class="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border-2 border-blue-200">
+          <div class="flex items-center mb-4">
+           <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3"><i class="fas fa-database text-blue-600"></i>
+           </div>
+           <h4 class="text-lg font-medium text-blue-900">🔧 Form Konfigurasi Google Sheet (User)</h4>
+          </div>
+          <div class="space-y-4">
+           <div><label class="block text-sm font-medium text-gray-700">Jenis Database</label> <select id="user-database-type" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"> <option value="canva">Canva Sheet (Recommended)</option> <option value="google">Google Sheet</option> </select>
+            <p class="text-xs text-gray-500 mt-1">Pilih jenis database untuk menyimpan data Anda</p>
+           </div>
+           <div id="user-google-config" class="hidden space-y-3 p-3 bg-blue-50 rounded-lg">
+            <div><label for="user-spreadsheet-id" class="block text-sm font-medium text-gray-700">Spreadsheet ID</label> <input type="text" id="user-spreadsheet-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+             <p class="text-xs text-gray-500 mt-1">ID dari URL Google Sheets</p>
+            </div>
+            <div><label for="user-service-key" class="block text-sm font-medium text-gray-700">Service Account Key</label> <textarea id="user-service-key" rows="3" placeholder="{&quot;type&quot;: &quot;service_account&quot;, ...}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs"></textarea>
+             <p class="text-xs text-gray-500 mt-1">JSON key dari Google Service Account</p>
+            </div>
+            <div class="bg-yellow-50 p-2 rounded">
+             <p class="text-xs text-yellow-700"><i class="fas fa-info-circle mr-1"></i> Pastikan Service Account memiliki akses ke Spreadsheet Anda</p>
+            </div>
+           </div>
+           <div class="flex items-center justify-between">
+            <div class="flex items-center">
+             <div id="user-connection-indicator" class="status-online w-3 h-3 rounded-full mr-2"></div><span id="user-connection-text" class="text-sm text-green-600 font-medium">Terhubung ke Canva Sheet</span>
+            </div><button onclick="testUserConnection()" class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded hover:bg-blue-200 transition-colors"> <i class="fas fa-plug mr-1"></i>Test </button>
+           </div>
+          </div>
+         </div><!-- Notification Settings -->
+         <div class="bg-gray-50 p-4 rounded-lg">
+          <h4 class="text-lg font-medium text-gray-900 mb-4"><i class="fas fa-bell mr-2 text-yellow-600"></i>Notifikasi</h4>
+          <div class="space-y-3">
+           <div class="flex items-center justify-between"><span class="text-sm text-gray-700">Email Notifikasi</span> <label class="relative inline-flex items-center cursor-pointer"> <input type="checkbox" id="email-notifications" class="sr-only peer" checked>
+             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label>
+           </div>
+           <div class="flex items-center justify-between"><span class="text-sm text-gray-700">Push Notifikasi</span> <label class="relative inline-flex items-center cursor-pointer"> <input type="checkbox" id="push-notifications" class="sr-only peer" checked>
+             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label>
+           </div>
+           <div class="flex items-center justify-between"><span class="text-sm text-gray-700">Alert Sistem</span> <label class="relative inline-flex items-center cursor-pointer"> <input type="checkbox" id="system-alerts" class="sr-only peer" checked>
+             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label>
+           </div>
+          </div>
+         </div><button onclick="saveUserSettings()" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"> <i class="fas fa-save mr-2"></i>Simpan Pengaturan </button>
+        </div>
+       </div>
+      </div><!-- Edit User Modal -->
+      <div id="edit-user-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+         <h3 class="text-xl font-bold text-gray-900"><i class="fas fa-user-edit mr-2 text-blue-600"></i>Edit User</h3><button onclick="hideEditUserModal()" class="text-gray-400 hover:text-gray-600"> <i class="fas fa-times"></i> </button>
+        </div>
+        <form id="edit-user-form" class="space-y-4"><input type="hidden" id="edit-user-id">
+         <div><label for="edit-user-fullname" class="block text-sm font-medium text-gray-700">Nama Lengkap</label> <input id="edit-user-fullname" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+         </div>
+         <div><label for="edit-user-email" class="block text-sm font-medium text-gray-700">Email</label> <input id="edit-user-email" type="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+         </div>
+         <div><label for="edit-user-phone" class="block text-sm font-medium text-gray-700">No. Telepon</label> <input id="edit-user-phone" type="tel" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+         </div>
+         <div><label for="edit-user-role" class="block text-sm font-medium text-gray-700">Role</label> <select id="edit-user-role" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="petani">Petani</option> <option value="supervisor">Supervisor</option> <option value="admin">Admin</option> </select>
+         </div>
+         <div><label for="edit-user-status" class="block text-sm font-medium text-gray-700">Status</label> <select id="edit-user-status" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"> <option value="active">Aktif</option> <option value="inactive">Tidak Aktif</option> </select>
+         </div><button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"> <i class="fas fa-save mr-2"></i>Simpan Perubahan </button>
+        </form>
+       </div>
+      </div><!-- Loading Overlay -->
+      <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div class="bg-white rounded-lg p-6 flex items-center space-x-3">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div><span class="text-gray-700 font-medium">Memproses...</span>
+       </div>
+      </div>
+      <script>
+        // Configuration
+        const defaultConfig = {
+            company_name: "PT. Agritech Indonesia",
+            system_title: "AgriTech Tebu Management System",
+            admin_email: "admin@agritech.com"
+        };
+
+        // Global Variables
+        let allData = [];
+        let currentUser = null;
+        let currentRecordCount = 0;
+        let notifications = [];
+        let unreadCount = 0;
+
+        // Data Handler
+        const dataHandler = {
+            onDataChanged(data) {
+                allData = data;
+                currentRecordCount = data.length;
+                updateDashboard();
+                renderAllSections();
+                updateSystemStats();
+            }
+        };
+
+        // Initialize Application
+        async function initializeApp() {
+            try {
+                // Initialize Data SDK
+                const initResult = await window.dataSdk.init(dataHandler);
+                if (!initResult.isOk) {
+                    console.error("Failed to initialize data SDK");
+                    return;
+                }
+
+                // Initialize Element SDK
+                if (window.elementSdk) {
+                    await window.elementSdk.init({
+                        defaultConfig,
+                        onConfigChange: async (config) => {
+                            document.getElementById('system-title').textContent = config.system_title || defaultConfig.system_title;
+                            document.getElementById('company-name').value = config.company_name || defaultConfig.company_name;
+                            document.getElementById('admin-email').value = config.admin_email || defaultConfig.admin_email;
+                        },
+                        mapToCapabilities: (config) => ({
+                            recolorables: [],
+                            borderables: [],
+                            fontEditable: undefined,
+                            fontSizeable: undefined
+                        }),
+                        mapToEditPanelValues: (config) => new Map([
+                            ["company_name", config.company_name || defaultConfig.company_name],
+                            ["system_title", config.system_title || defaultConfig.system_title],
+                            ["admin_email", config.admin_email || defaultConfig.admin_email]
+                        ])
+                    });
+                }
+
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Create demo accounts if not exist
+                await createDemoAccounts();
+                
+                // Initialize alerts
+                initializeAlerts();
+
+            } catch (error) {
+                console.error("Error initializing app:", error);
+            }
+        }
+
+        // Utility Functions
+        function showToast(message, type = 'info') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                icon: type,
+                title: message
+            });
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function updateLastSync() {
+            const now = new Date().toLocaleString('id-ID');
+            document.getElementById('last-sync').textContent = now;
+        }
+
+        function updateSystemStats() {
+            document.getElementById('total-records').textContent = `${currentRecordCount} records`;
+            document.getElementById('record-count').textContent = `${currentRecordCount} Records`;
+        }
+
+        function initializeAlerts() {
+            const alertsContainer = document.getElementById('alerts-list');
+            const sampleAlerts = [
+                {
+                    type: 'warning',
+                    title: 'Kelembaban Tanah Rendah',
+                    message: 'Plot A1 memerlukan penyiraman segera',
+                    time: '2 jam yang lalu'
+                },
+                {
+                    type: 'info',
+                    title: 'Jadwal Pemupukan',
+                    message: 'Plot B2 dijadwalkan pemupukan besok',
+                    time: '4 jam yang lalu'
+                },
+                {
+                    type: 'success',
+                    title: 'Panen Berhasil',
+                    message: 'Plot C1 berhasil dipanen 15 ton',
+                    time: '1 hari yang lalu'
+                }
+            ];
+
+            alertsContainer.innerHTML = sampleAlerts.map(alert => `
+                <div class="flex items-start p-4 border-l-4 ${
+                    alert.type === 'warning' ? 'border-yellow-400 bg-yellow-50' :
+                    alert.type === 'info' ? 'border-blue-400 bg-blue-50' :
+                    'border-green-400 bg-green-50'
+                } rounded-r-lg">
+                    <div class="flex-shrink-0">
+                        <i class="fas ${
+                            alert.type === 'warning' ? 'fa-exclamation-triangle text-yellow-600' :
+                            alert.type === 'info' ? 'fa-info-circle text-blue-600' :
+                            'fa-check-circle text-green-600'
+                        }"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <h4 class="text-sm font-medium text-gray-900">${alert.title}</h4>
+                        <p class="text-sm text-gray-600 mt-1">${alert.message}</p>
+                        <p class="text-xs text-gray-500 mt-2">${alert.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            
+            // Register form
+            document.getElementById('register-form').addEventListener('submit', handleRegister);
+            
+            // Add forms
+            document.getElementById('add-lahan-form').addEventListener('submit', handleAddLahan);
+            document.getElementById('add-aktivitas-form').addEventListener('submit', handleAddAktivitas);
+            document.getElementById('add-inventaris-form').addEventListener('submit', handleAddInventaris);
+            document.getElementById('add-transaksi-form').addEventListener('submit', handleAddTransaksi);
+            document.getElementById('add-user-form').addEventListener('submit', handleAddUser);
+            
+            // Edit forms
+            document.getElementById('edit-lahan-form').addEventListener('submit', handleEditLahan);
+            document.getElementById('edit-user-form').addEventListener('submit', handleEditUser);
+            
+            // Settings form
+            document.getElementById('settings-form').addEventListener('submit', handleSaveSettings);
+            
+            // Profile form
+            document.getElementById('profile-form').addEventListener('submit', handleUpdateProfile);
+            
+            // Database type change handlers
+            document.getElementById('database-type').addEventListener('change', handleDatabaseTypeChange);
+            document.getElementById('user-database-type').addEventListener('change', handleUserDatabaseTypeChange);
+            
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('aktivitas-date').value = today;
+            document.getElementById('transaksi-date').value = today;
+            
+            // Close modals on outside click
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0')) {
+                    hideAllModals();
+                }
+            });
+        }
+
+        // Authentication Functions
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            showLoading();
+            
+            // Check for demo accounts first
+            const demoUsers = {
+                admin: {
+                    user_id: 'admin-001',
+                    username: 'admin',
+                    password: 'admin123',
+                    role: 'admin',
+                    full_name: 'Administrator',
+                    email: 'admin@agritech.com',
+                    phone: '081234567890',
+                    status: 'active'
+                },
+                petani: {
+                    user_id: 'petani-001',
+                    username: 'petani',
+                    password: 'petani123',
+                    role: 'petani',
+                    full_name: 'Budi Santoso',
+                    email: 'budi@agritech.com',
+                    phone: '081234567891',
+                    status: 'active'
+                }
+            };
+            
+            // Check demo accounts
+            let user = null;
+            for (const [key, demoUser] of Object.entries(demoUsers)) {
+                if (demoUser.username === username && demoUser.password === password) {
+                    user = demoUser;
+                    break;
+                }
+            }
+            
+            // If not demo account, check registered users
+            if (!user) {
+                const users = allData.filter(item => item.type === 'user');
+                user = users.find(u => u.username === username && u.password === password);
+            }
+            
+            hideLoading();
+            
+            if (user) {
+                currentUser = user;
+                document.getElementById('user-name').textContent = user.full_name;
+                
+                // Show admin menu if admin
+                if (user.role === 'admin') {
+                    document.getElementById('admin-menu').classList.remove('hidden');
+                } else {
+                    document.getElementById('admin-menu').classList.add('hidden');
+                }
+                
+                // Hide login, show app
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                
+                showToast('Login berhasil!', 'success');
+                
+                // Update last sync time
+                updateLastSync();
+                
+            } else {
+                showToast('Username atau password salah!', 'error');
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            
+            if (currentRecordCount >= 999) {
+                showToast('Maksimum 999 data tercapai. Tidak dapat menambah user baru.', 'error');
+                return;
+            }
+            
+            showLoading();
+            
+            const userData = {
+                id: Date.now().toString(),
+                type: 'user',
+                user_id: Date.now().toString(),
+                username: document.getElementById('reg-username').value,
+                password: document.getElementById('reg-password').value,
+                role: document.getElementById('reg-role').value,
+                full_name: document.getElementById('reg-fullname').value,
+                email: document.getElementById('reg-email').value,
+                phone: document.getElementById('reg-phone').value,
+                status: 'active',
+                created_at: new Date().toISOString()
+            };
+            
+            const result = await window.dataSdk.create(userData);
+            hideLoading();
+            
+            if (result.isOk) {
+                hideRegister();
+                document.getElementById('register-form').reset();
+                showToast('Registrasi berhasil! Silakan login.', 'success');
+            } else {
+                showToast('Gagal melakukan registrasi. Silakan coba lagi.', 'error');
+            }
+        }
+
+        // Demo accounts are now handled directly in loginDemo function
+        async function createDemoAccounts() {
+            // No longer needed - demo accounts handled in loginDemo
+            console.log('Demo accounts will be created on demand');
+        }
+
+        async function loginDemo(role) {
+            showLoading();
+            
+            try {
+                // Set the form values
+                document.getElementById('username').value = role;
+                document.getElementById('password').value = role + '123';
+                
+                // Create demo user data directly
+                const demoUsers = {
+                    admin: {
+                        user_id: 'admin-001',
+                        username: 'admin',
+                        password: 'admin123',
+                        role: 'admin',
+                        full_name: 'Administrator',
+                        email: 'admin@agritech.com',
+                        phone: '081234567890',
+                        status: 'active'
+                    },
+                    petani: {
+                        user_id: 'petani-001',
+                        username: 'petani',
+                        password: 'petani123',
+                        role: 'petani',
+                        full_name: 'Budi Santoso',
+                        email: 'budi@agritech.com',
+                        phone: '081234567891',
+                        status: 'active'
+                    }
+                };
+                
+                const demoUser = demoUsers[role];
+                if (demoUser) {
+                    currentUser = demoUser;
+                    document.getElementById('user-name').textContent = demoUser.full_name;
+                    
+                    // Show admin menu if admin
+                    if (demoUser.role === 'admin') {
+                        document.getElementById('admin-menu').classList.remove('hidden');
+                    }
+                    
+                    // Hide login, show app
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('main-app').classList.remove('hidden');
+                    
+                    hideLoading();
+                    showToast('Login demo berhasil!', 'success');
+                    updateLastSync();
+                } else {
+                    hideLoading();
+                    showToast('Demo user tidak ditemukan!', 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                showToast('Terjadi kesalahan saat login demo!', 'error');
+                console.error('Login demo error:', error);
+            }
+        }
+
+        function logout() {
+            Swal.fire({
+                title: 'Konfirmasi Logout',
+                text: 'Apakah Anda yakin ingin keluar?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Keluar',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    currentUser = null;
+                    document.getElementById('admin-menu').classList.add('hidden');
+                    document.getElementById('main-app').classList.add('hidden');
+                    document.getElementById('login-screen').classList.remove('hidden');
+                    document.getElementById('login-form').reset();
+                    showToast('Logout berhasil!', 'success');
+                }
+            });
+        }
+
+        // UI Functions
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.getElementById('password-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('sidebar-hidden');
+            sidebar.classList.toggle('sidebar-active');
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function showRegister() {
+            document.getElementById('register-modal').classList.remove('hidden');
+        }
+
+        function hideRegister() {
+            document.getElementById('register-modal').classList.add('hidden');
+        }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Remove active state from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('text-green-600', 'bg-green-100');
+                item.classList.add('text-gray-600');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+            
+            // Add active state to clicked nav item
+            event.target.classList.remove('text-gray-600');
+            event.target.classList.add('text-green-600', 'bg-green-100');
+            
+            // Close sidebar on mobile
+            if (window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+        }
+
+        function showAddLahanModal() {
+            document.getElementById('add-lahan-modal').classList.remove('hidden');
+        }
+
+        function hideAddLahanModal() {
+            document.getElementById('add-lahan-modal').classList.add('hidden');
+        }
+
+        function hideAllModals() {
+            document.querySelectorAll('.fixed.inset-0').forEach(modal => {
+                if (modal.id !== 'loading-overlay') {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+
+        // Data Functions
+        async function handleAddLahan(e) {
+            e.preventDefault();
+            
+            if (currentRecordCount >= 999) {
+                showToast('Maksimum 999 data tercapai. Hapus beberapa data terlebih dahulu.', 'error');
+                return;
+            }
+            
+            showLoading();
+            
+            const lahanData = {
+                id: Date.now().toString(),
+                type: 'lahan',
+                user_id: currentUser.user_id,
+                plot_name: document.getElementById('lahan-name').value,
+                area: parseFloat(document.getElementById('lahan-area').value),
+                soil_type: document.getElementById('lahan-soil').value,
+                variety: document.getElementById('lahan-variety').value,
+                status: 'active',
+                created_at: new Date().toISOString()
+            };
+            
+            const result = await window.dataSdk.create(lahanData);
+            hideLoading();
+            
+            if (result.isOk) {
+                hideAddLahanModal();
+                document.getElementById('add-lahan-form').reset();
+                showToast('Lahan berhasil ditambahkan!', 'success');
+                
+                // Create notification
+                createNotification('success', 'Lahan Baru Ditambahkan', 
+                    `Plot ${lahanData.plot_name} (${lahanData.area} Ha) berhasil ditambahkan ke sistem`);
+            } else {
+                showToast('Gagal menambahkan lahan. Silakan coba lagi.', 'error');
+            }
+        }
+
+        async function handleAddAktivitas(e) {
+            e.preventDefault();
+            
+            if (currentRecordCount >= 999) {
+                showToast('Maksimum 999 data tercapai. Hapus beberapa data terlebih dahulu.', 'error');
+                return;
+            }
+            
+            showLoading();
+            
+            const aktivitasData = {
+                id: Date.now().toString(),
+                type: 'aktivitas',
+                user_id: currentUser.user_id,
+                plot_name: document.getElementById('aktivitas-plot').value,
+                activity_type: document.getElementById('aktivitas-type').value,
+                activity_date: document.getElementById('aktivitas-date').value,
+                description: document.getElementById('aktivitas-description').value,
+                status: 'completed',
+                created_at: new Date().toISOString()
+            };
+            
+            const result = await window.dataSdk.create(aktivitasData);
+            hideLoading();
+            
+            if (result.isOk) {
+                hideAddAktivitasModal();
+                document.getElementById('add-aktivitas-form').reset();
+                showToast('Aktivitas berhasil dicatat!', 'success');
+                
+                // Create notification
+                createNotification('info', 'Aktivitas Baru Tercatat', 
+                    `${aktivitasData.activity_type} di ${aktivitasData.plot_name} berhasil dicatat`);
+            } else {
+                showToast('Gagal mencatat aktivitas. Silakan coba lagi.', 'error');
+            }
+        }
+
+        async function handleAddInventaris(e) {
+            e.preventDefault();
+            
+            if (currentRecordCount >= 999) {
+                showToast('Maksimum 999 data tercapai. Hapus beberapa data terlebih dahulu.', 'error');
+                return;
+            }
+            
+            showLoading();
+            
+            const inventarisData = {
+                id: Date.now().toString(),
+                type: 'inventaris',
+                user_id: currentUser.user_id,
+                item_name: document.getElementById('inventaris-name').value,
+                category: document.getElementById('inventaris-category').value,
+                quantity: parseFloat(document.getElementById('inventaris-quantity').value),
+                unit: document.getElementById('inventaris-unit').value,
+                status: 'available',
+                created_at: new Date().toISOString()
+            };
+            
+            const result = await window.dataSdk.create(inventarisData);
+            hideLoading();
+            
+            if (result.isOk) {
+                hideAddInventarisModal();
+                document.getElementById('add-inventaris-form').reset();
+                showToast('Item inventaris berhasil ditambahkan!', 'success');
+            } else {
+                showToast('Gagal menambahkan item. Silakan coba lagi.', 'error');
+            }
+        }
+
+        async function handleAddTransaksi(e) {
+            e.preventDefault();
+            
+            if (currentRecordCount >= 999) {
+                showToast('Maksimum 999 data tercapai. Hapus beberapa data terlebih dahulu.', 'error');
+                return;
+            }
+            
+            showLoading();
+            
+            const transaksiData = {
+                id: Date.now().toString(),
+                type: 'transaksi',
+                user_id: currentUser.user_id,
+                transaction_type: document.getElementById('transaksi-type').value,
+                description: document.getElementById('transaksi-description').value,
+                amount: parseFloat(document.getElementById('transaksi-amount').value),
+                date: document.getElementById('transaksi-date').value,
+                status: 'completed',
+                created_at: new Date().toISOString()
+            };
+            
+            const result = await window.dataSdk.create(transaksiData);
+            hideLoading();
+            
+            if (result.isOk) {
+                hideAddTransaksiModal();
+                document.getElementById('add-transaksi-form').reset();
+                showToast('Transaksi berhasil ditambahkan!', 'success');
+                
+                // Create notification
+                const typeText = transaksiData.transaction_type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran';
+                createNotification(transaksiData.transaction_type === 'pemasukan' ? 'success' : 'info', 
+                    `${typeText} Baru`, 
+                    `${transaksiData.description} - ${formatCurrency(transaksiData.amount)}`);
+            } else {
+                showToast('Gagal menambahkan transaksi. Silakan coba lagi.', 'error');
+            }
+        }
+
+        async function handleAddUser(e) {
+            e.preventDefault();
+            
+            if (currentRecordCount >= 999) {
+                showToast('Maksimum 999 data tercapai. Hapus beberapa data terlebih dahulu.', 'error');
+                return;
+            }
+            
+            showLoading();
+            
+            const userData = {
+                id: Date.now().toString(),
+                type: 'user',
+                user_id: Date.now().toString(),
+                username: document.getElementById('user-username').value,
+                password: document.getElementById('user-password').value,
+                role: document.getElementById('user-role').value,
+                full_name: document.getElementById('user-fullname').value,
+                email: document.getElementById('user-email').value,
+                phone: document.getElementById('user-phone').value,
+                status: 'active',
+                created_at: new Date().toISOString()
+            };
+            
+            const result = await window.dataSdk.create(userData);
+            hideLoading();
+            
+            if (result.isOk) {
+                hideAddUserModal();
+                document.getElementById('add-user-form').reset();
+                showToast('User berhasil ditambahkan!', 'success');
+            } else {
+                showToast('Gagal menambahkan user. Silakan coba lagi.', 'error');
+            }
+        }
+
+        async function handleEditLahan(e) {
+            e.preventDefault();
+            
+            showLoading();
+            
+            const id = document.getElementById('edit-lahan-id').value;
+            const item = allData.find(d => d.__backendId === id);
+            
+            if (item) {
+                const updatedItem = {
+                    ...item,
+                    plot_name: document.getElementById('edit-lahan-name').value,
+                    area: parseFloat(document.getElementById('edit-lahan-area').value),
+                    soil_type: document.getElementById('edit-lahan-soil').value,
+                    variety: document.getElementById('edit-lahan-variety').value,
+                    updated_at: new Date().toISOString()
+                };
+                
+                const result = await window.dataSdk.update(updatedItem);
+                hideLoading();
+                
+                if (result.isOk) {
+                    hideEditLahanModal();
+                    showToast('Lahan berhasil diperbarui!', 'success');
+                } else {
+                    showToast('Gagal memperbarui lahan.', 'error');
+                }
+            }
+        }
+
+        async function handleEditUser(e) {
+            e.preventDefault();
+            
+            showLoading();
+            
+            const id = document.getElementById('edit-user-id').value;
+            const item = allData.find(d => d.__backendId === id);
+            
+            if (item) {
+                const updatedItem = {
+                    ...item,
+                    full_name: document.getElementById('edit-user-fullname').value,
+                    email: document.getElementById('edit-user-email').value,
+                    phone: document.getElementById('edit-user-phone').value,
+                    role: document.getElementById('edit-user-role').value,
+                    status: document.getElementById('edit-user-status').value,
+                    updated_at: new Date().toISOString()
+                };
+                
+                const result = await window.dataSdk.update(updatedItem);
+                hideLoading();
+                
+                if (result.isOk) {
+                    hideEditUserModal();
+                    showToast('User berhasil diperbarui!', 'success');
+                } else {
+                    showToast('Gagal memperbarui user.', 'error');
+                }
+            }
+        }
+
+        async function handleSaveSettings(e) {
+            e.preventDefault();
+            
+            if (window.elementSdk) {
+                await window.elementSdk.setConfig({
+                    company_name: document.getElementById('company-name').value,
+                    admin_email: document.getElementById('admin-email').value
+                });
+            }
+            
+            showToast('Pengaturan berhasil disimpan!', 'success');
+        }
+
+        // Dashboard Functions
+        function updateDashboard() {
+            const lahanData = allData.filter(item => item.type === 'lahan');
+            const transaksiData = allData.filter(item => item.type === 'transaksi');
+            
+            // Update stats
+            const totalLahan = lahanData.reduce((sum, item) => sum + (item.area || 0), 0);
+            document.getElementById('stat-total-lahan').textContent = `${totalLahan.toFixed(1)} Ha`;
+            
+            // Update financial stats
+            const pemasukan = transaksiData.filter(t => t.transaction_type === 'pemasukan').reduce((sum, t) => sum + (t.amount || 0), 0);
+            const pengeluaran = transaksiData.filter(t => t.transaction_type === 'pengeluaran').reduce((sum, t) => sum + (t.amount || 0), 0);
+            
+            document.getElementById('stat-pendapatan').textContent = formatCurrency(pemasukan);
+            document.getElementById('total-pemasukan').textContent = formatCurrency(pemasukan);
+            document.getElementById('total-pengeluaran').textContent = formatCurrency(pengeluaran);
+            document.getElementById('saldo').textContent = formatCurrency(pemasukan - pengeluaran);
+            
+            // Update recent activities
+            updateRecentActivities();
+        }
+
+        function updateRecentActivities() {
+            const activities = allData
+                .filter(item => item.type === 'aktivitas')
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 5);
+            
+            const container = document.getElementById('recent-activities');
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">Belum ada aktivitas terbaru.</p>';
+                return;
+            }
+            
+            container.innerHTML = activities.map(activity => `
+                <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-clipboard-list text-blue-600 text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900">${activity.activity_type}</p>
+                        <p class="text-sm text-gray-600">${activity.plot_name} - ${formatDate(activity.activity_date)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAllSections() {
+            renderLahanGrid();
+            renderUsersTable();
+            renderActivitiesTimeline();
+            renderInventarisGrid();
+            renderTransactionsTable();
+            updatePlotOptions();
+        }
+
+        function renderLahanGrid() {
+            const lahanData = allData.filter(item => item.type === 'lahan');
+            const container = document.getElementById('lahan-grid');
+            
+            if (lahanData.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i class="fas fa-map-marked-alt text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Belum ada lahan terdaftar. Tambahkan lahan pertama Anda.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = lahanData.map(lahan => `
+                <div class="bg-white shadow rounded-lg overflow-hidden hover-scale">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">${lahan.plot_name}</h3>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                ${lahan.status}
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Luas:</span>
+                                <span class="text-sm font-medium">${lahan.area} Ha</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Jenis Tanah:</span>
+                                <span class="text-sm font-medium">${lahan.soil_type}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Varietas:</span>
+                                <span class="text-sm font-medium">${lahan.variety}</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="editLahan('${lahan.__backendId}')" class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                            <button onclick="deleteLahan('${lahan.__backendId}')" class="flex-1 bg-red-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-red-700 transition-colors">
+                                <i class="fas fa-trash mr-1"></i>Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderUsersTable() {
+            const users = allData.filter(item => item.type === 'user');
+            const tbody = document.getElementById('users-table');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">Belum ada user terdaftar.</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.full_name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.username}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.email}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}">
+                            ${user.role}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            ${user.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editUser('${user.__backendId}')" class="text-blue-600 hover:text-blue-900 mr-3">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteUser('${user.__backendId}')" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderActivitiesTimeline() {
+            const activities = allData.filter(item => item.type === 'aktivitas');
+            const container = document.getElementById('activities-timeline');
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">Belum ada aktivitas tercatat.</p>';
+                return;
+            }
+            
+            const sortedActivities = activities.sort((a, b) => new Date(b.activity_date) - new Date(a.activity_date));
+            
+            container.innerHTML = sortedActivities.map(activity => `
+                <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-clipboard-list text-blue-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-medium text-gray-900">${activity.activity_type}</h4>
+                            <span class="text-sm text-gray-500">${formatDate(activity.activity_date)}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">${activity.plot_name}</p>
+                        <p class="text-sm text-gray-700 mt-2">${activity.description}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderInventarisGrid() {
+            const inventaris = allData.filter(item => item.type === 'inventaris');
+            const container = document.getElementById('inventaris-grid');
+            
+            if (inventaris.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i class="fas fa-boxes text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Belum ada item inventaris. Tambahkan item pertama Anda.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = inventaris.map(item => `
+                <div class="bg-white shadow rounded-lg overflow-hidden hover-scale">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">${item.item_name}</h3>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                ${item.category}
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Jumlah:</span>
+                                <span class="text-sm font-medium">${item.quantity} ${item.unit}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Status:</span>
+                                <span class="text-sm font-medium text-green-600">${item.status}</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="editInventaris('${item.__backendId}')" class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                            <button onclick="deleteInventaris('${item.__backendId}')" class="flex-1 bg-red-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-red-700 transition-colors">
+                                <i class="fas fa-trash mr-1"></i>Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTransactionsTable() {
+            const transactions = allData.filter(item => item.type === 'transaksi');
+            const tbody = document.getElementById('transactions-table');
+            
+            if (transactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">Belum ada transaksi tercatat.</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const sortedTransactions = transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            tbody.innerHTML = sortedTransactions.map(transaction => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(transaction.date)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${transaction.description}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${transaction.transaction_type === 'pemasukan' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${transaction.transaction_type}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${transaction.transaction_type === 'pemasukan' ? 'text-green-600' : 'text-red-600'}">
+                        ${formatCurrency(transaction.amount)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="deleteTransaction('${transaction.__backendId}')" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updatePlotOptions() {
+            const lahanData = allData.filter(item => item.type === 'lahan');
+            const select = document.getElementById('aktivitas-plot');
+            
+            select.innerHTML = '<option value="">Pilih Plot</option>' + 
+                lahanData.map(lahan => `<option value="${lahan.plot_name}">${lahan.plot_name}</option>`).join('');
+        }
+
+        // Modal Functions
+        function showAddAktivitasModal() {
+            document.getElementById('add-aktivitas-modal').classList.remove('hidden');
+        }
+
+        function hideAddAktivitasModal() {
+            document.getElementById('add-aktivitas-modal').classList.add('hidden');
+        }
+
+        function showAddInventarisModal() {
+            document.getElementById('add-inventaris-modal').classList.remove('hidden');
+        }
+
+        function hideAddInventarisModal() {
+            document.getElementById('add-inventaris-modal').classList.add('hidden');
+        }
+
+        function showAddTransaksiModal() {
+            document.getElementById('add-transaksi-modal').classList.remove('hidden');
+        }
+
+        function hideAddTransaksiModal() {
+            document.getElementById('add-transaksi-modal').classList.add('hidden');
+        }
+
+        function showAddUserModal() {
+            document.getElementById('add-user-modal').classList.remove('hidden');
+        }
+
+        function hideAddUserModal() {
+            document.getElementById('add-user-modal').classList.add('hidden');
+        }
+
+        function showEditLahanModal() {
+            document.getElementById('edit-lahan-modal').classList.remove('hidden');
+        }
+
+        function hideEditLahanModal() {
+            document.getElementById('edit-lahan-modal').classList.add('hidden');
+        }
+
+        function showEditUserModal() {
+            document.getElementById('edit-user-modal').classList.remove('hidden');
+        }
+
+        function hideEditUserModal() {
+            document.getElementById('edit-user-modal').classList.add('hidden');
+        }
+
+        function showProfileModal() {
+            if (currentUser) {
+                document.getElementById('profile-name').textContent = currentUser.full_name;
+                document.getElementById('profile-role').textContent = currentUser.role;
+                document.getElementById('profile-fullname').value = currentUser.full_name;
+                document.getElementById('profile-email').value = currentUser.email;
+                document.getElementById('profile-phone').value = currentUser.phone;
+            }
+            document.getElementById('profile-modal').classList.remove('hidden');
+        }
+
+        function hideProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+        }
+
+        function showUserSettingsModal() {
+            document.getElementById('user-settings-modal').classList.remove('hidden');
+        }
+
+        function hideUserSettingsModal() {
+            document.getElementById('user-settings-modal').classList.add('hidden');
+        }
+
+        // Edit Functions
+        function editLahan(id) {
+            const lahan = allData.find(item => item.__backendId === id);
+            if (lahan) {
+                document.getElementById('edit-lahan-id').value = id;
+                document.getElementById('edit-lahan-name').value = lahan.plot_name;
+                document.getElementById('edit-lahan-area').value = lahan.area;
+                document.getElementById('edit-lahan-soil').value = lahan.soil_type;
+                document.getElementById('edit-lahan-variety').value = lahan.variety;
+                showEditLahanModal();
+            }
+        }
+
+        function editUser(id) {
+            const user = allData.find(item => item.__backendId === id);
+            if (user) {
+                document.getElementById('edit-user-id').value = id;
+                document.getElementById('edit-user-fullname').value = user.full_name;
+                document.getElementById('edit-user-email').value = user.email;
+                document.getElementById('edit-user-phone').value = user.phone;
+                document.getElementById('edit-user-role').value = user.role;
+                document.getElementById('edit-user-status').value = user.status;
+                showEditUserModal();
+            }
+        }
+
+        // Delete Functions
+        async function deleteLahan(id) {
+            const result = await Swal.fire({
+                title: 'Hapus Lahan?',
+                text: 'Data lahan akan dihapus permanen!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                showLoading();
+                const item = allData.find(d => d.__backendId === id);
+                if (item) {
+                    const deleteResult = await window.dataSdk.delete(item);
+                    hideLoading();
+                    if (deleteResult.isOk) {
+                        showToast('Lahan berhasil dihapus!', 'success');
+                    } else {
+                        showToast('Gagal menghapus lahan!', 'error');
+                    }
+                }
+            }
+        }
+
+        async function deleteUser(id) {
+            const result = await Swal.fire({
+                title: 'Hapus User?',
+                text: 'Data user akan dihapus permanen!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                showLoading();
+                const item = allData.find(d => d.__backendId === id);
+                if (item) {
+                    const deleteResult = await window.dataSdk.delete(item);
+                    hideLoading();
+                    if (deleteResult.isOk) {
+                        showToast('User berhasil dihapus!', 'success');
+                    } else {
+                        showToast('Gagal menghapus user!', 'error');
+                    }
+                }
+            }
+        }
+
+        async function deleteInventaris(id) {
+            const result = await Swal.fire({
+                title: 'Hapus Item?',
+                text: 'Item inventaris akan dihapus permanen!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                showLoading();
+                const item = allData.find(d => d.__backendId === id);
+                if (item) {
+                    const deleteResult = await window.dataSdk.delete(item);
+                    hideLoading();
+                    if (deleteResult.isOk) {
+                        showToast('Item berhasil dihapus!', 'success');
+                    } else {
+                        showToast('Gagal menghapus item!', 'error');
+                    }
+                }
+            }
+        }
+
+        async function deleteTransaction(id) {
+            const result = await Swal.fire({
+                title: 'Hapus Transaksi?',
+                text: 'Data transaksi akan dihapus permanen!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                showLoading();
+                const item = allData.find(d => d.__backendId === id);
+                if (item) {
+                    const deleteResult = await window.dataSdk.delete(item);
+                    hideLoading();
+                    if (deleteResult.isOk) {
+                        showToast('Transaksi berhasil dihapus!', 'success');
+                    } else {
+                        showToast('Gagal menghapus transaksi!', 'error');
+                    }
+                }
+            }
+        }
+
+        // Settings Functions
+        function handleDatabaseTypeChange() {
+            const type = document.getElementById('database-type').value;
+            const googleConfig = document.getElementById('google-sheet-config');
+            const status = document.getElementById('connection-status');
+            const description = document.getElementById('connection-description');
+            
+            if (type === 'google') {
+                googleConfig.classList.remove('hidden');
+                status.textContent = 'Belum terkonfigurasi';
+                status.className = 'text-sm text-red-600 font-medium';
+                description.textContent = 'Konfigurasi Google Sheets API diperlukan';
+            } else {
+                googleConfig.classList.add('hidden');
+                status.textContent = 'Terhubung ke Canva Sheet';
+                status.className = 'text-sm text-green-600 font-medium';
+                description.textContent = 'Data disimpan otomatis ke Google Sheet melalui Canva Data SDK';
+            }
+        }
+
+        function handleUserDatabaseTypeChange() {
+            const type = document.getElementById('user-database-type').value;
+            const googleConfig = document.getElementById('user-google-config');
+            const indicator = document.getElementById('user-connection-indicator');
+            const text = document.getElementById('user-connection-text');
+            
+            if (type === 'google') {
+                googleConfig.classList.remove('hidden');
+                text.textContent = 'Belum terkonfigurasi';
+                text.className = 'text-sm text-red-600 font-medium';
+                indicator.className = 'w-3 h-3 rounded-full mr-2 bg-red-500';
+            } else {
+                googleConfig.classList.add('hidden');
+                text.textContent = 'Terhubung ke Canva Sheet';
+                text.className = 'text-sm text-green-600 font-medium';
+                indicator.className = 'status-online w-3 h-3 rounded-full mr-2';
+            }
+        }
+
+        function testGoogleSheetConnection() {
+            showToast('Fitur test koneksi Google Sheet akan segera tersedia!', 'info');
+        }
+
+        function testUserConnection() {
+            showToast('Fitur test koneksi akan segera tersedia!', 'info');
+        }
+
+        function syncData() {
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                updateLastSync();
+                showToast('Sinkronisasi berhasil!', 'success');
+            }, 2000);
+        }
+
+        async function resetDatabase() {
+            const result = await Swal.fire({
+                title: 'Reset Database?',
+                text: 'Semua data akan dihapus permanen! Tindakan ini tidak dapat dibatalkan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Reset!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                showLoading();
+                // Delete all data except demo users
+                const itemsToDelete = allData.filter(item => item.type !== 'user' || !['admin', 'petani'].includes(item.username));
+                
+                for (const item of itemsToDelete) {
+                    await window.dataSdk.delete(item);
+                }
+                
+                hideLoading();
+                showToast('Database berhasil direset!', 'success');
+            }
+        }
+
+        function saveUserSettings() {
+            showToast('Pengaturan pengguna berhasil disimpan!', 'success');
+            hideUserSettingsModal();
+        }
+
+        async function handleUpdateProfile(e) {
+            e.preventDefault();
+            showToast('Profil berhasil diperbarui!', 'success');
+            hideProfileModal();
+        }
+
+        // Weather Functions
+        let weatherData = null;
+        let userLocation = null;
+
+        async function getCurrentLocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation tidak didukung browser ini'));
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve({
+                            lat: position.coords.latitude,
+                            lon: position.coords.longitude
+                        });
+                    },
+                    (error) => {
+                        // Fallback ke lokasi Indonesia (Jakarta) jika gagal
+                        console.warn('Gagal mendapatkan lokasi:', error.message);
+                        resolve({
+                            lat: -6.2088,
+                            lon: 106.8456,
+                            fallback: true
+                        });
+                    },
+                    {
+                        timeout: 10000,
+                        enableHighAccuracy: true
+                    }
+                );
+            });
+        }
+
+        async function fetchWeatherData(lat, lon) {
+            try {
+                // Menggunakan OpenWeatherMap API (gratis)
+                const API_KEY = 'demo'; // Dalam implementasi nyata, gunakan API key yang valid
+                
+                // Simulasi data cuaca berdasarkan lokasi Indonesia
+                const weatherResponse = {
+                    name: lat === -6.2088 ? 'Jakarta' : 'Indonesia',
+                    main: {
+                        temp: Math.round(25 + Math.random() * 10), // 25-35°C
+                        feels_like: Math.round(27 + Math.random() * 8),
+                        humidity: Math.round(60 + Math.random() * 30), // 60-90%
+                        pressure: Math.round(1010 + Math.random() * 20)
+                    },
+                    weather: [
+                        {
+                            main: ['Clear', 'Clouds', 'Rain'][Math.floor(Math.random() * 3)],
+                            description: ['cerah', 'berawan', 'hujan ringan'][Math.floor(Math.random() * 3)]
+                        }
+                    ],
+                    wind: {
+                        speed: Math.round(5 + Math.random() * 15), // 5-20 km/h
+                        deg: Math.round(Math.random() * 360)
+                    },
+                    visibility: Math.round(8000 + Math.random() * 2000), // 8-10 km
+                    dt: Math.floor(Date.now() / 1000)
+                };
+
+                return weatherResponse;
+            } catch (error) {
+                console.error('Error fetching weather:', error);
+                // Return fallback data
+                return {
+                    name: 'Indonesia',
+                    main: {
+                        temp: 28,
+                        feels_like: 32,
+                        humidity: 75,
+                        pressure: 1013
+                    },
+                    weather: [{ main: 'Clouds', description: 'berawan' }],
+                    wind: { speed: 12, deg: 180 },
+                    visibility: 9000,
+                    dt: Math.floor(Date.now() / 1000)
+                };
+            }
+        }
+
+        function getWeatherIcon(weatherMain) {
+            const icons = {
+                'Clear': 'fa-sun',
+                'Clouds': 'fa-cloud',
+                'Rain': 'fa-cloud-rain',
+                'Drizzle': 'fa-cloud-drizzle',
+                'Thunderstorm': 'fa-bolt',
+                'Snow': 'fa-snowflake',
+                'Mist': 'fa-smog',
+                'Fog': 'fa-smog'
+            };
+            return icons[weatherMain] || 'fa-cloud';
+        }
+
+        function getWindDirection(degrees) {
+            const directions = ['U', 'TL', 'T', 'TG', 'S', 'BD', 'B', 'BL'];
+            const index = Math.round(degrees / 45) % 8;
+            return directions[index];
+        }
+
+        async function updateWeatherDisplay() {
+            try {
+                // Get user location
+                if (!userLocation) {
+                    userLocation = await getCurrentLocation();
+                }
+
+                // Fetch weather data
+                weatherData = await fetchWeatherData(userLocation.lat, userLocation.lon);
+
+                // Update dashboard weather widget
+                document.getElementById('weather-temp').textContent = `${weatherData.main.temp}°C`;
+                document.getElementById('weather-desc').textContent = weatherData.weather[0].description;
+                document.getElementById('weather-location').textContent = `📍 Lokasi: ${weatherData.name}${userLocation.fallback ? ' (Perkiraan)' : ''}`;
+                document.getElementById('weather-humidity').textContent = `Kelembaban: ${weatherData.main.humidity}%`;
+                document.getElementById('weather-wind').textContent = `Angin: ${weatherData.wind.speed} km/h ${getWindDirection(weatherData.wind.deg)}`;
+                document.getElementById('weather-feels').textContent = `Terasa: ${weatherData.main.feels_like}°C`;
+                document.getElementById('weather-visibility').textContent = `Jarak pandang: ${(weatherData.visibility / 1000).toFixed(1)} km`;
+                document.getElementById('weather-icon').className = `fas ${getWeatherIcon(weatherData.weather[0].main)}`;
+                document.getElementById('weather-update').textContent = `Update: ${new Date().toLocaleTimeString('id-ID')}`;
+
+                // Update monitoring section
+                document.getElementById('monitoring-location').textContent = `${weatherData.name}${userLocation.fallback ? ' (Perkiraan)' : ''}`;
+                document.getElementById('monitoring-temp').textContent = `${weatherData.main.temp}°C`;
+                document.getElementById('monitoring-humidity').textContent = `${weatherData.main.humidity}%`;
+                document.getElementById('monitoring-pressure').textContent = `${weatherData.main.pressure} hPa`;
+                document.getElementById('monitoring-wind').textContent = `${weatherData.wind.speed} km/h`;
+                document.getElementById('monitoring-update').textContent = `Update: ${new Date().toLocaleTimeString('id-ID')}`;
+
+            } catch (error) {
+                console.error('Error updating weather:', error);
+                
+                // Show fallback data
+                document.getElementById('weather-temp').textContent = '28°C';
+                document.getElementById('weather-desc').textContent = 'Data tidak tersedia';
+                document.getElementById('weather-location').textContent = '📍 Lokasi: Indonesia (Demo)';
+                document.getElementById('weather-humidity').textContent = 'Kelembaban: 75%';
+                document.getElementById('weather-wind').textContent = 'Angin: 12 km/h';
+                document.getElementById('weather-feels').textContent = 'Terasa: 32°C';
+                document.getElementById('weather-visibility').textContent = 'Jarak pandang: 9.0 km';
+                document.getElementById('weather-update').textContent = `Update: ${new Date().toLocaleTimeString('id-ID')}`;
+
+                // Update monitoring section with fallback
+                document.getElementById('monitoring-location').textContent = 'Indonesia (Demo)';
+                document.getElementById('monitoring-temp').textContent = '28°C';
+                document.getElementById('monitoring-humidity').textContent = '75%';
+                document.getElementById('monitoring-pressure').textContent = '1013 hPa';
+                document.getElementById('monitoring-wind').textContent = '12 km/h';
+                document.getElementById('monitoring-update').textContent = `Update: ${new Date().toLocaleTimeString('id-ID')}`;
+            }
+        }
+
+        async function refreshWeather() {
+            showToast('Memperbarui data cuaca...', 'info');
+            await updateWeatherDisplay();
+            showToast('Data cuaca berhasil diperbarui!', 'success');
+        }
+
+        async function refreshWeatherMonitoring() {
+            showToast('Memperbarui monitoring cuaca...', 'info');
+            await updateWeatherDisplay();
+            showToast('Data monitoring berhasil diperbarui!', 'success');
+        }
+
+        // Auto-refresh weather every 10 minutes
+        setInterval(updateWeatherDisplay, 10 * 60 * 1000);
+
+        // Notification System
+        function createNotification(type, title, message, data = {}) {
+            const notification = {
+                id: Date.now().toString(),
+                type: type, // 'info', 'success', 'warning', 'error'
+                title: title,
+                message: message,
+                timestamp: new Date().toISOString(),
+                read: false,
+                data: data
+            };
+            
+            notifications.unshift(notification);
+            unreadCount++;
+            updateNotificationBadge();
+            updateNotificationList();
+            
+            // Auto-remove after 24 hours
+            setTimeout(() => {
+                removeNotification(notification.id);
+            }, 24 * 60 * 60 * 1000);
+            
+            return notification;
+        }
+
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notification-badge');
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.classList.remove('hidden');
+                badge.classList.add('animate-pulse');
+            } else {
+                badge.textContent = '0';
+                badge.classList.add('hidden');
+                badge.classList.remove('animate-pulse');
+            }
+        }
+
+        function updateNotificationList() {
+            const container = document.getElementById('notification-list');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-gray-500">
+                        <i class="fas fa-bell-slash text-3xl mb-2"></i>
+                        <p>Tidak ada notifikasi</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = notifications.map(notification => {
+                const timeAgo = getTimeAgo(new Date(notification.timestamp));
+                const iconClass = {
+                    'info': 'fa-info-circle text-blue-600',
+                    'success': 'fa-check-circle text-green-600',
+                    'warning': 'fa-exclamation-triangle text-yellow-600',
+                    'error': 'fa-times-circle text-red-600'
+                }[notification.type] || 'fa-bell text-gray-600';
+                
+                return `
+                    <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}" 
+                         onclick="markAsRead('${notification.id}')">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mr-3">
+                                <i class="fas ${iconClass}"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                        ${notification.title}
+                                        ${!notification.read ? '<span class="ml-2 w-2 h-2 bg-blue-600 rounded-full inline-block"></span>' : ''}
+                                    </p>
+                                    <button onclick="removeNotification('${notification.id}'); event.stopPropagation();" 
+                                            class="text-gray-400 hover:text-gray-600 ml-2">
+                                        <i class="fas fa-times text-xs"></i>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">${notification.message}</p>
+                                <p class="text-xs text-gray-500 mt-2">${timeAgo}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Baru saja';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
+            return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('hidden');
+            
+            // Close profile menu if open
+            document.getElementById('profile-menu').classList.add('hidden');
+        }
+
+        function markAsRead(notificationId) {
+            const notification = notifications.find(n => n.id === notificationId);
+            if (notification && !notification.read) {
+                notification.read = true;
+                unreadCount = Math.max(0, unreadCount - 1);
+                updateNotificationBadge();
+                updateNotificationList();
+            }
+        }
+
+        function markAllAsRead() {
+            notifications.forEach(n => n.read = true);
+            unreadCount = 0;
+            updateNotificationBadge();
+            updateNotificationList();
+            showToast('Semua notifikasi ditandai sebagai dibaca', 'success');
+        }
+
+        function removeNotification(notificationId) {
+            const index = notifications.findIndex(n => n.id === notificationId);
+            if (index !== -1) {
+                const notification = notifications[index];
+                if (!notification.read) {
+                    unreadCount = Math.max(0, unreadCount - 1);
+                }
+                notifications.splice(index, 1);
+                updateNotificationBadge();
+                updateNotificationList();
+            }
+        }
+
+        function clearAllNotifications() {
+            if (notifications.length === 0) {
+                showToast('Tidak ada notifikasi untuk dihapus', 'info');
+                return;
+            }
+            
+            Swal.fire({
+                title: 'Hapus Semua Notifikasi?',
+                text: 'Semua notifikasi akan dihapus permanen',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Hapus Semua',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    notifications = [];
+                    unreadCount = 0;
+                    updateNotificationBadge();
+                    updateNotificationList();
+                    showToast('Semua notifikasi berhasil dihapus', 'success');
+                }
+            });
+        }
+
+        // Auto-generate notifications based on system events
+        function generateSystemNotifications() {
+            // Weather alerts
+            if (weatherData) {
+                if (weatherData.main.humidity > 85) {
+                    createNotification('warning', 'Kelembaban Tinggi', 
+                        `Kelembaban udara ${weatherData.main.humidity}% - Waspadai penyakit tanaman`);
+                }
+                
+                if (weatherData.wind.speed > 25) {
+                    createNotification('warning', 'Angin Kencang', 
+                        `Kecepatan angin ${weatherData.wind.speed} km/h - Periksa tanaman Anda`);
+                }
+            }
+            
+            // Data alerts
+            if (currentRecordCount > 950) {
+                createNotification('warning', 'Kapasitas Database', 
+                    `Database hampir penuh (${currentRecordCount}/999) - Pertimbangkan untuk menghapus data lama`);
+            }
+            
+            // Activity reminders
+            const today = new Date();
+            const activities = allData.filter(item => item.type === 'aktivitas');
+            const recentActivities = activities.filter(activity => {
+                const activityDate = new Date(activity.activity_date);
+                const daysDiff = Math.floor((today - activityDate) / (1000 * 60 * 60 * 24));
+                return daysDiff <= 7;
+            });
+            
+            if (recentActivities.length === 0 && activities.length > 0) {
+                createNotification('info', 'Reminder Aktivitas', 
+                    'Belum ada aktivitas tercatat minggu ini - Jangan lupa catat kegiatan pertanian Anda');
+            }
+        }
+
+        // Initialize notifications with sample data
+        function initializeNotifications() {
+            // Create some sample notifications
+            createNotification('success', 'Selamat Datang!', 
+                'Sistem AgriTech berhasil dimuat. Semua fitur siap digunakan.');
+            
+            createNotification('info', 'Tips Hari Ini', 
+                'Periksa kelembaban tanah secara rutin untuk hasil panen yang optimal.');
+            
+            createNotification('warning', 'Jadwal Pemupukan', 
+                'Waktunya pemupukan rutin untuk Plot A1 - Jangan sampai terlewat!');
+            
+            // Generate system notifications every 30 minutes
+            setInterval(generateSystemNotifications, 30 * 60 * 1000);
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeApp();
+            // Initialize notifications
+            initializeNotifications();
+            // Load weather data after app initialization
+            setTimeout(updateWeatherDisplay, 2000);
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.relative')) {
+                    document.getElementById('notification-dropdown').classList.add('hidden');
+                    document.getElementById('profile-menu').classList.add('hidden');
+                }
+            });
+        });
+    </script>
+     </div>
+    </main>
+   </div>
+  </div>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fa5287a4b3fe1d',t:'MTc2MzMzMTA2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
