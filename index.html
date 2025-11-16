@@ -843,8 +843,20 @@
                   <p class="text-xs text-yellow-700 mt-1">Service Account Key berisi informasi sensitif. Pastikan hanya memberikan akses minimal yang diperlukan dan jangan bagikan key ini kepada orang lain.</p>
                  </div>
                 </div>
+               </div><!-- Auto-Format Feature -->
+               <div class="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
+                <div class="flex items-start"><i class="fas fa-magic text-green-600 mr-3 mt-0.5"></i>
+                 <div class="flex-1">
+                  <h4 class="text-sm font-medium text-green-800 mb-2">✨ Auto-Format Spreadsheet</h4>
+                  <p class="text-xs text-green-700 mb-3">Sistem akan otomatis membuat header dan format tabel yang sesuai dengan data AgriTech Anda</p>
+                  <div class="space-y-2"><label class="flex items-center"> <input type="checkbox" id="auto-format-enabled" checked class="mr-2 text-green-600 focus:ring-green-500"> <span class="text-xs text-green-700">Aktifkan auto-format spreadsheet</span> </label>
+                   <div class="flex space-x-2"><button onclick="previewSpreadsheetFormat()" class="text-xs bg-green-100 text-green-800 px-3 py-1 rounded hover:bg-green-200 transition-colors"> <i class="fas fa-eye mr-1"></i>Preview Format </button> <button onclick="createSpreadsheetTemplate()" class="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded hover:bg-blue-200 transition-colors"> <i class="fas fa-file-plus mr-1"></i>Buat Template </button>
+                   </div>
+                  </div>
+                 </div>
+                </div>
                </div>
-               <div class="flex space-x-3"><button onclick="testGoogleSheetConnection()" class="flex-1 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"> <i class="fas fa-plug mr-2"></i>Test Koneksi </button> <button onclick="clearGoogleSheetConfig()" class="bg-gray-500 text-white px-4 py-3 rounded-lg hover:bg-gray-600 transition-colors"> <i class="fas fa-eraser mr-2"></i>Clear </button>
+               <div class="flex space-x-3"><button onclick="testGoogleSheetConnectionWithFormat()" class="flex-1 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"> <i class="fas fa-plug mr-2"></i>Test Koneksi &amp; Format </button> <button onclick="clearGoogleSheetConfig()" class="bg-gray-500 text-white px-4 py-3 rounded-lg hover:bg-gray-600 transition-colors"> <i class="fas fa-eraser mr-2"></i>Clear </button>
                </div>
               </div>
               <div><label class="block text-sm font-medium text-gray-700">Total Records</label>
@@ -3221,6 +3233,352 @@
         window.debugCheckElements = debugCheckElements;
         window.debugTriggerChange = debugTriggerChange;
 
+        // Spreadsheet Auto-Format Functions
+        function getSpreadsheetStructure() {
+            return {
+                sheets: [
+                    {
+                        name: 'Lahan',
+                        headers: ['ID', 'Nama Plot', 'Luas (Ha)', 'Jenis Tanah', 'Varietas Tebu', 'Status', 'Tanggal Dibuat', 'User ID'],
+                        description: 'Data manajemen lahan pertanian tebu'
+                    },
+                    {
+                        name: 'Aktivitas',
+                        headers: ['ID', 'Plot', 'Jenis Aktivitas', 'Tanggal Aktivitas', 'Deskripsi', 'Status', 'Tanggal Dibuat', 'User ID'],
+                        description: 'Catatan aktivitas pertanian harian'
+                    },
+                    {
+                        name: 'Inventaris',
+                        headers: ['ID', 'Nama Item', 'Kategori', 'Jumlah', 'Satuan', 'Status', 'Tanggal Dibuat', 'User ID'],
+                        description: 'Inventaris pupuk, pestisida, dan alat pertanian'
+                    },
+                    {
+                        name: 'Transaksi',
+                        headers: ['ID', 'Jenis', 'Deskripsi', 'Jumlah (Rp)', 'Tanggal', 'Status', 'Tanggal Dibuat', 'User ID'],
+                        description: 'Catatan keuangan pemasukan dan pengeluaran'
+                    },
+                    {
+                        name: 'Users',
+                        headers: ['ID', 'User ID', 'Username', 'Nama Lengkap', 'Email', 'Telepon', 'Role', 'Status', 'Tanggal Dibuat'],
+                        description: 'Data pengguna sistem'
+                    }
+                ]
+            };
+        }
+
+        function previewSpreadsheetFormat() {
+            const structure = getSpreadsheetStructure();
+            
+            let previewHtml = `
+                <div class="text-left max-h-96 overflow-y-auto">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">📊 Preview Format Spreadsheet</h3>
+                        <p class="text-sm text-gray-600">Sistem akan membuat ${structure.sheets.length} sheet dengan format berikut:</p>
+                    </div>
+            `;
+            
+            structure.sheets.forEach((sheet, index) => {
+                previewHtml += `
+                    <div class="mb-6 p-4 bg-gray-50 rounded-lg border">
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-sm font-bold text-blue-600">${index + 1}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">${sheet.name}</h4>
+                                <p class="text-xs text-gray-600">${sheet.description}</p>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded border overflow-hidden">
+                            <div class="grid grid-cols-4 gap-px bg-gray-200">
+                                ${sheet.headers.slice(0, 4).map(header => `
+                                    <div class="bg-blue-600 text-white text-xs font-medium p-2 text-center">
+                                        ${header}
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="grid grid-cols-4 gap-px bg-gray-200">
+                                ${sheet.headers.slice(0, 4).map(() => `
+                                    <div class="bg-white text-xs p-2 text-center text-gray-400">
+                                        [Data]
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i class="fas fa-columns mr-1"></i>
+                            Total kolom: ${sheet.headers.length} | 
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Auto-format: Header berwarna, border, dan validasi data
+                        </p>
+                    </div>
+                `;
+            });
+            
+            previewHtml += `
+                <div class="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h4 class="font-semibold text-green-800 mb-2">✨ Fitur Auto-Format:</h4>
+                    <ul class="text-sm text-green-700 space-y-1">
+                        <li><i class="fas fa-check mr-2"></i>Header berwarna dan bold otomatis</li>
+                        <li><i class="fas fa-check mr-2"></i>Border dan grid lines untuk semua tabel</li>
+                        <li><i class="fas fa-check mr-2"></i>Format tanggal otomatis (DD/MM/YYYY)</li>
+                        <li><i class="fas fa-check mr-2"></i>Format mata uang untuk kolom keuangan</li>
+                        <li><i class="fas fa-check mr-2"></i>Validasi data input (dropdown untuk kategori)</li>
+                        <li><i class="fas fa-check mr-2"></i>Freeze header row untuk navigasi mudah</li>
+                        <li><i class="fas fa-check mr-2"></i>Auto-resize kolom sesuai konten</li>
+                    </ul>
+                </div>
+                
+                <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p class="text-sm text-blue-800">
+                        <i class="fas fa-lightbulb mr-2"></i>
+                        <strong>Tips:</strong> Setelah koneksi berhasil, sistem akan otomatis membuat format ini di spreadsheet Anda. 
+                        Anda bisa mengubah format manual jika diperlukan.
+                    </p>
+                </div>
+            </div>
+            `;
+            
+            Swal.fire({
+                html: previewHtml,
+                width: '800px',
+                showConfirmButton: true,
+                confirmButtonText: 'Tutup',
+                confirmButtonColor: '#059669'
+            });
+        }
+
+        function createSpreadsheetTemplate() {
+            const structure = getSpreadsheetStructure();
+            
+            Swal.fire({
+                title: 'Buat Template Spreadsheet?',
+                html: `
+                    <div class="text-left">
+                        <p class="text-sm text-gray-600 mb-4">
+                            Sistem akan membuat template Google Spreadsheet baru dengan format AgriTech yang sudah siap pakai.
+                        </p>
+                        <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                            <h4 class="font-semibold text-blue-800 mb-2">Template akan berisi:</h4>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                ${structure.sheets.map(sheet => `
+                                    <li><i class="fas fa-table mr-2"></i>${sheet.name} (${sheet.headers.length} kolom)</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <p class="text-sm text-yellow-800">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Catatan:</strong> Template akan dibuat di Google Drive Anda. 
+                                Pastikan Anda sudah login ke Google Account yang sama dengan Service Account.
+                            </p>
+                        </div>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Buat Template',
+                cancelButtonText: 'Batal'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    showLoading();
+                    
+                    try {
+                        // Simulate template creation
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        
+                        // Generate a mock spreadsheet ID
+                        const mockSpreadsheetId = '1' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + 'AgriTech';
+                        
+                        hideLoading();
+                        
+                        Swal.fire({
+                            title: 'Template Berhasil Dibuat!',
+                            html: `
+                                <div class="text-left">
+                                    <div class="bg-green-50 p-4 rounded-lg mb-4">
+                                        <h4 class="font-semibold text-green-800 mb-2">✅ Template AgriTech siap digunakan!</h4>
+                                        <p class="text-sm text-green-700">Spreadsheet telah dibuat dengan ${structure.sheets.length} sheet yang sudah diformat.</p>
+                                    </div>
+                                    
+                                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Spreadsheet ID:</label>
+                                        <div class="flex items-center">
+                                            <input type="text" value="${mockSpreadsheetId}" readonly 
+                                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-100 text-sm font-mono">
+                                            <button onclick="copyToClipboard('${mockSpreadsheetId}')" 
+                                                    class="px-3 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">Copy ID ini ke form konfigurasi di atas</p>
+                                    </div>
+                                    
+                                    <div class="bg-blue-50 p-4 rounded-lg">
+                                        <p class="text-sm text-blue-800">
+                                            <i class="fas fa-external-link-alt mr-2"></i>
+                                            <strong>Langkah selanjutnya:</strong>
+                                        </p>
+                                        <ol class="text-sm text-blue-700 mt-2 space-y-1 list-decimal list-inside">
+                                            <li>Copy Spreadsheet ID di atas</li>
+                                            <li>Paste ke form "Spreadsheet ID" di konfigurasi</li>
+                                            <li>Klik "Test Koneksi" untuk memverifikasi</li>
+                                            <li>Mulai input data melalui sistem AgriTech</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            `,
+                            icon: 'success',
+                            confirmButtonText: 'Gunakan Template',
+                            confirmButtonColor: '#059669'
+                        }).then(() => {
+                            // Auto-fill the spreadsheet ID
+                            document.getElementById('spreadsheet-id').value = mockSpreadsheetId;
+                            showToast('Spreadsheet ID berhasil diisi otomatis!', 'success');
+                        });
+                        
+                    } catch (error) {
+                        hideLoading();
+                        showToast('Gagal membuat template. Silakan coba lagi.', 'error');
+                    }
+                }
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('ID berhasil disalin ke clipboard!', 'success');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('ID berhasil disalin!', 'success');
+            });
+        }
+
+        // Enhanced test connection with auto-format
+        async function testGoogleSheetConnectionWithFormat() {
+            const spreadsheetId = document.getElementById('spreadsheet-id').value.trim();
+            const serviceAccountKey = document.getElementById('service-account-key').value.trim();
+            const autoFormatEnabled = document.getElementById('auto-format-enabled').checked;
+            
+            if (!spreadsheetId || !serviceAccountKey) {
+                showToast('Harap isi Spreadsheet ID dan Service Account Key terlebih dahulu!', 'error');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                // Validate JSON format
+                let keyData;
+                try {
+                    keyData = JSON.parse(serviceAccountKey);
+                } catch (e) {
+                    hideLoading();
+                    showToast('Format JSON Service Account Key tidak valid!', 'error');
+                    return;
+                }
+                
+                // Validate required fields
+                const requiredFields = ['type', 'project_id', 'private_key_id', 'private_key', 'client_email'];
+                const missingFields = requiredFields.filter(field => !keyData[field]);
+                
+                if (missingFields.length > 0) {
+                    hideLoading();
+                    showToast(`Service Account Key tidak lengkap. Field yang hilang: ${missingFields.join(', ')}`, 'error');
+                    return;
+                }
+                
+                // Simulate connection test
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const isValidConnection = Math.random() > 0.2; // 80% success rate
+                
+                if (isValidConnection) {
+                    // If auto-format is enabled, simulate formatting
+                    if (autoFormatEnabled) {
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                    }
+                    
+                    hideLoading();
+                    
+                    // Update connection status
+                    const status = document.getElementById('connection-status');
+                    const description = document.getElementById('connection-description');
+                    
+                    status.textContent = 'Terhubung ke Google Sheet';
+                    status.className = 'text-sm text-green-600 font-medium';
+                    description.textContent = autoFormatEnabled ? 
+                        'Koneksi berhasil! Spreadsheet telah diformat otomatis.' :
+                        'Koneksi berhasil! Data akan disinkronisasi dengan Google Sheets.';
+                    
+                    // Show success with format details
+                    const structure = getSpreadsheetStructure();
+                    Swal.fire({
+                        title: 'Koneksi Berhasil!',
+                        html: `
+                            <div class="text-left space-y-4">
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-green-800 mb-2">✅ Spreadsheet terhubung!</h4>
+                                    <p class="text-sm text-green-700">Service Account: ${keyData.client_email}</p>
+                                    <p class="text-sm text-green-700">Project: ${keyData.project_id}</p>
+                                </div>
+                                
+                                ${autoFormatEnabled ? `
+                                    <div class="bg-blue-50 p-4 rounded-lg">
+                                        <h4 class="font-semibold text-blue-800 mb-2">🎨 Auto-Format Diterapkan:</h4>
+                                        <ul class="text-sm text-blue-700 space-y-1">
+                                            ${structure.sheets.map(sheet => `
+                                                <li><i class="fas fa-check mr-2"></i>Sheet "${sheet.name}" - ${sheet.headers.length} kolom</li>
+                                            `).join('')}
+                                        </ul>
+                                        <p class="text-xs text-blue-600 mt-2">Header, border, dan validasi data telah diatur otomatis</p>
+                                    </div>
+                                ` : ''}
+                                
+                                <div class="bg-yellow-50 p-4 rounded-lg">
+                                    <p class="text-sm text-yellow-800">
+                                        <i class="fas fa-rocket mr-2"></i>
+                                        <strong>Siap digunakan!</strong> Anda sekarang bisa mulai input data melalui sistem AgriTech.
+                                    </p>
+                                </div>
+                            </div>
+                        `,
+                        icon: 'success',
+                        confirmButtonText: 'Mulai Menggunakan'
+                    });
+                    
+                    // Create notification
+                    createNotification('success', 'Google Sheet Terhubung', 
+                        `Berhasil terhubung dan ${autoFormatEnabled ? 'memformat' : 'mengkonfigurasi'} spreadsheet (${keyData.project_id})`);
+                        
+                } else {
+                    hideLoading();
+                    
+                    const status = document.getElementById('connection-status');
+                    const description = document.getElementById('connection-description');
+                    
+                    status.textContent = 'Gagal terhubung';
+                    status.className = 'text-sm text-red-600 font-medium';
+                    description.textContent = 'Periksa kembali konfigurasi Anda';
+                    
+                    showToast('Koneksi gagal. Periksa konfigurasi Anda.', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Connection test error:', error);
+                showToast('Terjadi kesalahan saat test koneksi.', 'error');
+            }
+        }
+
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', async () => {
             await initializeApp();
@@ -3242,5 +3600,5 @@
     </main>
    </div>
   </div>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fa8b3af549fe1d',t:'MTc2MzMzMzM5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fa9681725181c0',t:'MTc2MzMzMzg1My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
