@@ -1830,6 +1830,53 @@
                 }
             }
 
+            async read(sheetName = null) {
+                try {
+                    if (!this.isConfigured) {
+                        throw new Error('Google Sheets API not configured');
+                    }
+
+                    await this.authenticate();
+
+                    const sheets = sheetName ? [sheetName] : ['Lahan', 'Aktivitas', 'Inventaris', 'Transaksi', 'Users', 'Sensors'];
+                    const allData = [];
+
+                    for (const sheet of sheets) {
+                        console.log(`📖 Reading data from sheet "${sheet}"...`);
+                        
+                        const response = await this.simulateAPICall('GET', `values/${sheet}!A:Z`);
+                        
+                        if (response.success && response.data && response.data.values) {
+                            const rows = response.data.values;
+                            if (rows.length > 1) { // Skip header row
+                                const headers = rows[0];
+                                const dataRows = rows.slice(1);
+                                
+                                dataRows.forEach((row, index) => {
+                                    if (row.length > 0 && row[0]) { // Skip empty rows
+                                        const record = this.convertFromRowData(headers, row, sheet);
+                                        if (record) {
+                                            allData.push(record);
+                                        }
+                                    }
+                                });
+                                
+                                console.log(`✅ Read ${dataRows.length} records from ${sheet}`);
+                            }
+                        } else {
+                            console.log(`⚠️ No data found in sheet "${sheet}"`);
+                        }
+                    }
+
+                    console.log(`📊 Total records read from Google Sheets: ${allData.length}`);
+                    return { success: true, data: allData };
+                    
+                } catch (error) {
+                    console.error('❌ Failed to read from Google Sheets:', error);
+                    return { success: false, error: error.message };
+                }
+            }
+
             async update(data) {
                 try {
                     if (!this.isConfigured) {
@@ -1972,6 +2019,122 @@
                     default:
                         return Object.values(data);
                 }
+            }
+
+            convertFromRowData(headers, row, sheetName) {
+                // Convert spreadsheet row to data object
+                if (!row || row.length === 0) return null;
+                
+                const record = {
+                    __backendId: row[0] || Date.now().toString(), // Use first column as ID
+                    type: this.getDataType(sheetName)
+                };
+                
+                // Map each column to appropriate field
+                headers.forEach((header, index) => {
+                    if (row[index] !== undefined && row[index] !== '') {
+                        const fieldName = this.getFieldName(header, sheetName);
+                        let value = row[index];
+                        
+                        // Convert data types
+                        if (fieldName === 'area' || fieldName === 'amount' || fieldName === 'quantity' || 
+                            fieldName === 'temperature' || fieldName === 'humidity' || fieldName === 'ph' ||
+                            fieldName === 'soil_moisture' || fieldName === 'light_level' || fieldName === 'battery_level') {
+                            value = parseFloat(value) || 0;
+                        }
+                        
+                        record[fieldName] = value;
+                    }
+                });
+                
+                return record;
+            }
+
+            getDataType(sheetName) {
+                const typeMap = {
+                    'Lahan': 'lahan',
+                    'Aktivitas': 'aktivitas', 
+                    'Inventaris': 'inventaris',
+                    'Transaksi': 'transaksi',
+                    'Users': 'user',
+                    'Sensors': 'sensor'
+                };
+                return typeMap[sheetName] || 'unknown';
+            }
+
+            getFieldName(header, sheetName) {
+                // Map header names to field names
+                const fieldMaps = {
+                    'Lahan': {
+                        'ID': 'id',
+                        'Plot Name': 'plot_name',
+                        'Area (Ha)': 'area',
+                        'Soil Type': 'soil_type',
+                        'Variety': 'variety',
+                        'Status': 'status',
+                        'Created At': 'created_at',
+                        'User ID': 'user_id'
+                    },
+                    'Aktivitas': {
+                        'ID': 'id',
+                        'Plot Name': 'plot_name',
+                        'Activity Type': 'activity_type',
+                        'Date': 'activity_date',
+                        'Description': 'description',
+                        'Status': 'status',
+                        'Created At': 'created_at',
+                        'User ID': 'user_id'
+                    },
+                    'Inventaris': {
+                        'ID': 'id',
+                        'Item Name': 'item_name',
+                        'Category': 'category',
+                        'Quantity': 'quantity',
+                        'Unit': 'unit',
+                        'Status': 'status',
+                        'Created At': 'created_at',
+                        'User ID': 'user_id'
+                    },
+                    'Transaksi': {
+                        'ID': 'id',
+                        'Type': 'transaction_type',
+                        'Description': 'description',
+                        'Amount': 'amount',
+                        'Date': 'transaction_date',
+                        'Status': 'status',
+                        'Created At': 'created_at',
+                        'User ID': 'user_id'
+                    },
+                    'Users': {
+                        'ID': 'id',
+                        'User ID': 'user_id',
+                        'Username': 'username',
+                        'Password': 'password',
+                        'Full Name': 'full_name',
+                        'Email': 'email',
+                        'Phone': 'phone',
+                        'Role': 'role',
+                        'Status': 'status',
+                        'Created At': 'created_at'
+                    },
+                    'Sensors': {
+                        'ID': 'id',
+                        'Sensor ID': 'sensor_id',
+                        'Plot Name': 'plot_name',
+                        'Temperature': 'temperature',
+                        'Humidity': 'humidity',
+                        'pH': 'ph',
+                        'Soil Moisture': 'soil_moisture',
+                        'Light Level': 'light_level',
+                        'Battery Level': 'battery_level',
+                        'Status': 'status',
+                        'Last Update': 'last_update',
+                        'Created At': 'created_at'
+                    }
+                };
+                
+                const map = fieldMaps[sheetName];
+                return map ? (map[header] || header.toLowerCase().replace(/\s+/g, '_')) : header.toLowerCase().replace(/\s+/g, '_');
             }
 
             async realAPICall(method, endpoint, data = null) {
@@ -2513,6 +2676,52 @@
             }
         }
 
+        function debugForceLogin() {
+            console.log('🔧 FORCE LOGIN FOR TESTING...');
+            
+            // Create a test admin user if no users exist
+            if (allData.filter(item => item.type === 'user').length === 0) {
+                console.log('👤 Creating test admin user...');
+                const testAdmin = {
+                    id: 'admin-001',
+                    type: 'user',
+                    user_id: 'admin-001',
+                    username: 'admin',
+                    password: 'admin123',
+                    full_name: 'Administrator',
+                    email: 'admin@agritech.com',
+                    phone: '081234567890',
+                    role: 'admin',
+                    status: 'active',
+                    created_at: new Date().toISOString(),
+                    __backendId: 'admin-001'
+                };
+                
+                allData.push(testAdmin);
+                console.log('✅ Test admin user created:', testAdmin);
+            }
+            
+            // Force login as admin
+            const adminUser = allData.find(item => item.type === 'user' && item.role === 'admin' && item.status === 'active');
+            if (adminUser) {
+                currentUser = adminUser;
+                saveSession();
+                
+                document.getElementById('user-name').textContent = adminUser.full_name;
+                document.getElementById('admin-menu').classList.remove('hidden');
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                
+                console.log('🎉 Force login successful as:', adminUser.full_name);
+                showToast(`🎉 Force login as ${adminUser.full_name}`, 'success');
+                
+                return adminUser;
+            } else {
+                console.log('❌ No admin user found for force login');
+                return null;
+            }
+        }
+
         function debugManualSave() {
             console.log('🔧 MANUAL SAVE TEST...');
             
@@ -2575,6 +2784,39 @@
             showToast(`Manual save test completed. Attempts: ${saveAttempts}, Local: ✅`, 'info');
             
             return testLahan;
+        }
+
+        // Load data from Google Sheets
+        async function loadDataFromGoogleSheets() {
+            try {
+                if (window.googleSheetsAPI && window.googleSheetsAPI.isConfigured) {
+                    console.log('📊 Loading data from Google Sheets...');
+                    
+                    const result = await window.googleSheetsAPI.read();
+                    
+                    if (result.success && result.data) {
+                        console.log('✅ Data loaded from Google Sheets:', result.data.length, 'records');
+                        
+                        // Update global data
+                        allData = result.data;
+                        currentRecordCount = allData.length;
+                        
+                        // Trigger data change handler
+                        dataHandler.onDataChanged(allData);
+                        
+                        return true;
+                    } else {
+                        console.log('⚠️ Failed to load from Google Sheets:', result.error);
+                        return false;
+                    }
+                } else {
+                    console.log('⚠️ Google Sheets API not configured');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Error loading from Google Sheets:', error);
+                return false;
+            }
         }
 
         // Initialize Application
@@ -3476,6 +3718,19 @@
                             const isRealConnection = result.isRealConnection || false;
                             updateConnectionStatus('google', true, '', isRealConnection);
                             console.log('🎉 Auto-test successful:', isRealConnection ? 'REAL CONNECTION' : 'DEMO MODE');
+                            
+                            // Auto-load data from Google Sheets after successful connection
+                            setTimeout(async () => {
+                                console.log('📊 Auto-loading data from Google Sheets...');
+                                const loadSuccess = await loadDataFromGoogleSheets();
+                                if (loadSuccess) {
+                                    console.log('🎉 Data auto-loaded successfully from Google Sheets!');
+                                    showToast('📊 Data berhasil dimuat dari Google Sheets!', 'success');
+                                } else {
+                                    console.log('⚠️ Auto-load failed, using Canva Sheet data');
+                                }
+                            }, 1000);
+                            
                         } else {
                             updateConnectionStatus('google', false, result.error);
                             console.log('❌ Auto-test failed:', result.error);
@@ -5126,5 +5381,5 @@
         window.debugQuickTest = debugQuickTest;
         window.debugManualSave = debugManualSave;
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fda906e21cfd10',t:'MTc2MzM2NjA2OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fdbd3987a3d4a5',t:'MTc2MzM2Njg5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
