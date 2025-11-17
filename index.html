@@ -2208,7 +2208,7 @@
                 id: 'test-' + Date.now(),
                 type: 'lahan',
                 user_id: currentUser?.user_id || 'test-user',
-                plot_name: 'QUICK TEST PLOT',
+                plot_name: 'QUICK TEST PLOT ' + new Date().getTime(),
                 area: 1.0,
                 soil_type: 'Test Soil',
                 variety: 'Test Variety',
@@ -2222,22 +2222,29 @@
             if (window.googleSheetsAPI && window.googleSheetsAPI.isConfigured) {
                 console.log('✅ Google Sheets API is configured');
                 console.log('📊 Spreadsheet ID:', window.googleSheetsAPI.spreadsheetId?.substring(0, 10) + '...');
+                console.log('🔑 Has Access Token:', !!window.googleSheetsAPI.accessToken);
                 
-                // Try to save test data
-                window.googleSheetsAPI.create(testData).then(result => {
-                    if (result.success) {
-                        console.log('✅ SUCCESS: Data saved to Google Sheets!');
-                        console.log('🔗 Check your spreadsheet now!');
-                        showToast('Test berhasil! Cek Google Sheets Anda.', 'success');
+                // Try to save test data using createRecord function (same as real form)
+                console.log('🎯 Testing via createRecord function (same as form submission)...');
+                createRecord('lahan', {
+                    plot_name: testData.plot_name,
+                    area: testData.area,
+                    soil_type: testData.soil_type,
+                    variety: testData.variety,
+                    status: testData.status
+                }).then(success => {
+                    if (success) {
+                        console.log('🎉 SUCCESS: createRecord worked!');
+                        showToast('🎉 Test berhasil! Data tersimpan via createRecord.', 'success');
                     } else {
-                        console.log('❌ FAILED: Could not save to Google Sheets');
-                        console.log('Error:', result.error);
-                        showToast('Test gagal: ' + result.error, 'error');
+                        console.log('❌ FAILED: createRecord failed');
+                        showToast('❌ Test gagal via createRecord', 'error');
                     }
                 }).catch(error => {
-                    console.log('❌ ERROR:', error);
-                    showToast('Test error: ' + error.message, 'error');
+                    console.log('❌ ERROR in createRecord:', error);
+                    showToast('❌ Test error: ' + error.message, 'error');
                 });
+                
             } else {
                 console.log('❌ Google Sheets API not configured');
                 console.log('💡 Go to Settings and configure Google Sheets API first');
@@ -3062,41 +3069,33 @@
 
                 console.log('💾 Attempting to save record:', newRecord);
 
-                // Check if Google Sheets API is configured and prioritize it
+                // **PRIORITAS 1: Google Sheets API (jika dikonfigurasi dan berhasil test koneksi)**
                 if (window.googleSheetsAPI && window.googleSheetsAPI.isConfigured) {
-                    console.log('🔄 Trying Google Sheets API first...');
+                    console.log('🎯 PRIORITAS 1: Trying Google Sheets API...');
                     const googleResult = await window.googleSheetsAPI.create(newRecord);
                     
                     if (googleResult.success) {
-                        console.log('✅ SUCCESS: Data saved to Google Sheets!');
+                        console.log('🎉 SUCCESS: Data saved to Google Sheets!');
                         
-                        // Also save to Canva SDK for local sync
+                        // Update local data for immediate UI update (TIDAK SAVE KE CANVA SDK)
                         newRecord.__backendId = newRecord.id;
-                        if (window.dataSdk) {
-                            try {
-                                await window.dataSdk.create(newRecord);
-                                console.log('✅ Also synced to Canva SDK');
-                            } catch (e) {
-                                console.log('⚠️ Canva SDK sync failed, but Google Sheets succeeded');
-                            }
-                        }
-                        
-                        // Update local data for immediate UI update
                         allData.push(newRecord);
+                        currentRecordCount = allData.length;
                         dataHandler.onDataChanged(allData);
                         
                         hideLoading();
-                        showToast('✅ Data berhasil disimpan ke Google Sheets!', 'success');
+                        showToast('🎉 Data berhasil disimpan ke Google Sheets!', 'success');
                         return true;
                     } else {
                         console.log('❌ Google Sheets failed:', googleResult.error);
-                        showToast('⚠️ Google Sheets error: ' + googleResult.error, 'warning');
+                        console.log('🔄 Falling back to Canva SDK...');
+                        // Lanjut ke fallback, jangan return di sini
                     }
                 }
 
-                // Try Canva Data SDK as fallback
+                // **PRIORITAS 2: Canva Data SDK (fallback otomatis)**
                 if (window.dataSdk) {
-                    console.log('🔄 Trying Canva Data SDK...');
+                    console.log('🎯 PRIORITAS 2: Trying Canva Data SDK...');
                     const result = await window.dataSdk.create(newRecord);
                     if (result.isOk) {
                         console.log('✅ Saved to Canva Data SDK');
@@ -3105,13 +3104,15 @@
                         return true;
                     } else {
                         console.log('❌ Canva SDK failed:', result.error);
+                        console.log('🔄 Falling back to local storage...');
                     }
                 }
 
-                // Final fallback to local storage
-                console.log('🔄 Using local storage fallback...');
+                // **PRIORITAS 3: Local Storage (offline mode)**
+                console.log('🎯 PRIORITAS 3: Using local storage fallback...');
                 newRecord.__backendId = newRecord.id;
                 allData.push(newRecord);
+                currentRecordCount = allData.length;
                 saveToLocalStorage();
                 dataHandler.onDataChanged(allData);
                 
@@ -3133,17 +3134,46 @@
             try {
                 record.updated_at = new Date().toISOString();
 
-                // Try Data SDK first
-                if (window.dataSdk && record.__backendId) {
-                    const result = await window.dataSdk.update(record);
-                    if (result.isOk) {
+                // **PRIORITAS 1: Google Sheets API (jika dikonfigurasi)**
+                if (window.googleSheetsAPI && window.googleSheetsAPI.isConfigured) {
+                    console.log('🎯 PRIORITAS 1: Updating via Google Sheets API...');
+                    const googleResult = await window.googleSheetsAPI.update(record);
+                    
+                    if (googleResult.success) {
+                        console.log('🎉 SUCCESS: Data updated in Google Sheets!');
+                        
+                        // Update local data for immediate UI update
+                        const index = allData.findIndex(item => item.__backendId === record.__backendId);
+                        if (index !== -1) {
+                            allData[index] = record;
+                            dataHandler.onDataChanged(allData);
+                        }
+                        
                         hideLoading();
-                        showToast('Data berhasil diperbarui!', 'success');
+                        showToast('🎉 Data berhasil diperbarui di Google Sheets!', 'success');
                         return true;
+                    } else {
+                        console.log('❌ Google Sheets update failed:', googleResult.error);
+                        console.log('🔄 Falling back to Canva SDK...');
                     }
                 }
 
-                // Fallback to local storage
+                // **PRIORITAS 2: Canva Data SDK (fallback)**
+                if (window.dataSdk && record.__backendId) {
+                    console.log('🎯 PRIORITAS 2: Updating via Canva Data SDK...');
+                    const result = await window.dataSdk.update(record);
+                    if (result.isOk) {
+                        console.log('✅ Updated in Canva Data SDK');
+                        hideLoading();
+                        showToast('✅ Data berhasil diperbarui di Canva Sheet!', 'success');
+                        return true;
+                    } else {
+                        console.log('❌ Canva SDK update failed:', result.error);
+                    }
+                }
+
+                // **PRIORITAS 3: Local Storage (offline mode)**
+                console.log('🎯 PRIORITAS 3: Updating in local storage...');
                 const index = allData.findIndex(item => item.__backendId === record.__backendId);
                 if (index !== -1) {
                     allData[index] = record;
@@ -3152,13 +3182,13 @@
                 }
                 
                 hideLoading();
-                showToast('Data berhasil diperbarui (local)!', 'success');
+                showToast('⚠️ Data berhasil diperbarui (offline mode)', 'warning');
                 return true;
                 
             } catch (error) {
                 hideLoading();
-                console.error('Update error:', error);
-                showToast('Gagal memperbarui data: ' + error.message, 'error');
+                console.error('❌ Update error:', error);
+                showToast('❌ Gagal memperbarui data: ' + error.message, 'error');
                 return false;
             }
         }
@@ -3180,32 +3210,63 @@
             showLoading();
             
             try {
-                // Try Data SDK first
-                if (window.dataSdk && record.__backendId) {
-                    const deleteResult = await window.dataSdk.delete(record);
-                    if (deleteResult.isOk) {
+                // **PRIORITAS 1: Google Sheets API (jika dikonfigurasi)**
+                if (window.googleSheetsAPI && window.googleSheetsAPI.isConfigured) {
+                    console.log('🎯 PRIORITAS 1: Deleting via Google Sheets API...');
+                    const googleResult = await window.googleSheetsAPI.delete(record);
+                    
+                    if (googleResult.success) {
+                        console.log('🎉 SUCCESS: Data deleted from Google Sheets!');
+                        
+                        // Update local data for immediate UI update
+                        const index = allData.findIndex(item => item.__backendId === record.__backendId);
+                        if (index !== -1) {
+                            allData.splice(index, 1);
+                            currentRecordCount = allData.length;
+                            dataHandler.onDataChanged(allData);
+                        }
+                        
                         hideLoading();
-                        showToast('Data berhasil dihapus!', 'success');
+                        showToast('🎉 Data berhasil dihapus dari Google Sheets!', 'success');
                         return true;
+                    } else {
+                        console.log('❌ Google Sheets delete failed:', googleResult.error);
+                        console.log('🔄 Falling back to Canva SDK...');
                     }
                 }
 
-                // Fallback to local storage
+                // **PRIORITAS 2: Canva Data SDK (fallback)**
+                if (window.dataSdk && record.__backendId) {
+                    console.log('🎯 PRIORITAS 2: Deleting via Canva Data SDK...');
+                    const deleteResult = await window.dataSdk.delete(record);
+                    if (deleteResult.isOk) {
+                        console.log('✅ Deleted from Canva Data SDK');
+                        hideLoading();
+                        showToast('✅ Data berhasil dihapus dari Canva Sheet!', 'success');
+                        return true;
+                    } else {
+                        console.log('❌ Canva SDK delete failed:', deleteResult.error);
+                    }
+                }
+
+                // **PRIORITAS 3: Local Storage (offline mode)**
+                console.log('🎯 PRIORITAS 3: Deleting from local storage...');
                 const index = allData.findIndex(item => item.__backendId === record.__backendId);
                 if (index !== -1) {
                     allData.splice(index, 1);
+                    currentRecordCount = allData.length;
                     saveToLocalStorage();
                     dataHandler.onDataChanged(allData);
                 }
                 
                 hideLoading();
-                showToast('Data berhasil dihapus (local)!', 'success');
+                showToast('⚠️ Data berhasil dihapus (offline mode)', 'warning');
                 return true;
                 
             } catch (error) {
                 hideLoading();
-                console.error('Delete error:', error);
-                showToast('Gagal menghapus data: ' + error.message, 'error');
+                console.error('❌ Delete error:', error);
+                showToast('❌ Gagal menghapus data: ' + error.message, 'error');
                 return false;
             }
         }
@@ -3937,5 +3998,5 @@
         window.debugQuickTest = debugQuickTest;
         window.debugManualSave = debugManualSave;
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fbe52070d3c189',t:'MTc2MzM0NzU1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fbefbb92ea44b5',t:'MTc2MzM0Nzk5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
