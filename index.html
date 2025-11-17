@@ -221,10 +221,56 @@
             transform: translateX(-100%);
         }
         
-        @media (max-width: 768px) {
+        /* Desktop Layout */
+        @media (min-width: 1024px) {
+            #main-app {
+                display: flex !important;
+            }
+            
             .sidebar {
-                position: fixed;
-                z-index: 50;
+                position: relative !important;
+                transform: translateX(0) !important;
+                z-index: auto !important;
+                flex-shrink: 0;
+                width: 16rem; /* 256px = w-64 */
+            }
+            
+            .sidebar-hidden {
+                transform: translateX(0) !important;
+            }
+            
+            .main-content {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            /* Hide hamburger on desktop */
+            .hamburger-btn {
+                display: none !important;
+            }
+        }
+        
+        /* Mobile Layout */
+        @media (max-width: 1023px) {
+            .sidebar {
+                position: fixed !important;
+                z-index: 50 !important;
+                width: 16rem;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+            
+            .sidebar-active {
+                transform: translateX(0) !important;
+            }
+            
+            .main-content {
+                width: 100%;
+            }
+            
+            /* Show hamburger on mobile */
+            .hamburger-btn {
+                display: flex !important;
             }
         }
         
@@ -309,7 +355,7 @@
   </div><!-- Main Application -->
   <div id="main-app" class="hidden min-h-full"><!-- Mobile Sidebar Overlay -->
    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div><!-- Sidebar -->
-   <div id="sidebar" class="sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform sidebar-hidden transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-y-0">
+   <div id="sidebar" class="sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform sidebar-hidden transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0">
     <div class="flex items-center justify-center h-16 bg-green-600">
      <div class="flex items-center"><i class="fas fa-seedling text-white text-2xl mr-3"></i> <span class="text-white text-lg font-bold">AgriTech</span>
      </div>
@@ -321,8 +367,8 @@
      </div>
     </nav>
    </div><!-- Main Content -->
-   <div class="flex flex-col flex-1 lg:ml-64"><!-- Top Navigation -->
-    <div class="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow"><button onclick="toggleSidebar()" class="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 lg:hidden"> <i class="fas fa-bars"></i> </button>
+   <div class="main-content flex flex-col"><!-- Top Navigation -->
+    <div class="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow"><button onclick="toggleSidebar()" class="hamburger-btn px-4 border-r border-gray-200 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500"> <span class="sr-only">Open sidebar</span> <i class="fas fa-bars text-xl"></i> </button>
      <div class="flex-1 px-4 flex justify-between">
       <div class="flex-1 flex">
        <div class="w-full flex md:ml-0">
@@ -2929,20 +2975,39 @@
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
             
-            if (sidebar.classList.contains('sidebar-hidden')) {
-                // Show sidebar
-                sidebar.classList.remove('sidebar-hidden');
-                sidebar.classList.add('sidebar-active');
-                if (overlay) {
-                    overlay.classList.remove('hidden');
+            console.log('🔧 Toggle sidebar called, window width:', window.innerWidth);
+            
+            // Only toggle on mobile/tablet (below lg breakpoint)
+            if (window.innerWidth < 1024) {
+                const isHidden = sidebar.classList.contains('sidebar-hidden') || 
+                               sidebar.style.transform === 'translateX(-100%)' ||
+                               !sidebar.classList.contains('sidebar-active');
+                
+                console.log('📱 Mobile mode - sidebar hidden:', isHidden);
+                
+                if (isHidden) {
+                    // Show sidebar
+                    console.log('👉 Showing sidebar');
+                    sidebar.classList.remove('sidebar-hidden');
+                    sidebar.classList.add('sidebar-active');
+                    sidebar.style.transform = 'translateX(0)';
+                    if (overlay) {
+                        overlay.classList.remove('hidden');
+                        console.log('🌫️ Showing overlay');
+                    }
+                } else {
+                    // Hide sidebar
+                    console.log('👈 Hiding sidebar');
+                    sidebar.classList.add('sidebar-hidden');
+                    sidebar.classList.remove('sidebar-active');
+                    sidebar.style.transform = 'translateX(-100%)';
+                    if (overlay) {
+                        overlay.classList.add('hidden');
+                        console.log('🌫️ Hiding overlay');
+                    }
                 }
             } else {
-                // Hide sidebar
-                sidebar.classList.add('sidebar-hidden');
-                sidebar.classList.remove('sidebar-active');
-                if (overlay) {
-                    overlay.classList.add('hidden');
-                }
+                console.log('🖥️ Desktop mode - sidebar toggle disabled');
             }
         }
 
@@ -2982,10 +3047,12 @@
                 
                 // Close sidebar on mobile
                 if (window.innerWidth < 1024) {
+                    console.log('📱 Closing sidebar after menu selection');
                     const sidebar = document.getElementById('sidebar');
                     const overlay = document.getElementById('sidebar-overlay');
                     sidebar.classList.add('sidebar-hidden');
                     sidebar.classList.remove('sidebar-active');
+                    sidebar.style.transform = 'translateX(-100%)';
                     if (overlay) {
                         overlay.classList.add('hidden');
                     }
@@ -3319,6 +3386,12 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await initializeApp();
             
+            // Initialize sidebar state based on screen size
+            initializeSidebar();
+            
+            // Handle window resize
+            window.addEventListener('resize', initializeSidebar);
+            
             // Close dropdowns when clicking outside
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.relative')) {
@@ -3330,13 +3403,41 @@
             const overlay = document.getElementById('sidebar-overlay');
             if (overlay) {
                 overlay.addEventListener('click', function() {
+                    console.log('🌫️ Overlay clicked - closing sidebar');
                     const sidebar = document.getElementById('sidebar');
                     sidebar.classList.add('sidebar-hidden');
                     sidebar.classList.remove('sidebar-active');
+                    sidebar.style.transform = 'translateX(-100%)';
                     overlay.classList.add('hidden');
                 });
             }
         });
+
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            console.log('🔧 Initialize sidebar, window width:', window.innerWidth);
+            
+            if (window.innerWidth >= 1024) {
+                // Desktop: Always show sidebar, hide overlay
+                console.log('🖥️ Desktop mode - showing sidebar permanently');
+                sidebar.classList.remove('sidebar-hidden', 'sidebar-active');
+                sidebar.style.transform = 'translateX(0)';
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                }
+            } else {
+                // Mobile/Tablet: Hide sidebar by default
+                console.log('📱 Mobile mode - hiding sidebar by default');
+                sidebar.classList.add('sidebar-hidden');
+                sidebar.classList.remove('sidebar-active');
+                sidebar.style.transform = 'translateX(-100%)';
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                }
+            }
+        }
 
         // CRUD Operations
         async function createRecord(type, data) {
@@ -4644,5 +4745,5 @@
         window.debugQuickTest = debugQuickTest;
         window.debugManualSave = debugManualSave;
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fc24e8f50ff8d3',t:'MTc2MzM1MDE3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fc53f8d458ff85',t:'MTc2MzM1MjA5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
