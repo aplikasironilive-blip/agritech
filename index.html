@@ -307,8 +307,9 @@
     </div>
    </div>
   </div><!-- Main Application -->
-  <div id="main-app" class="hidden min-h-full"><!-- Sidebar -->
-   <div id="sidebar" class="sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform sidebar-hidden transition-transform duration-300 ease-in-out lg:translate-x-0 lg:fixed lg:inset-y-0">
+  <div id="main-app" class="hidden min-h-full"><!-- Mobile Sidebar Overlay -->
+   <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div><!-- Sidebar -->
+   <div id="sidebar" class="sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform sidebar-hidden transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-y-0">
     <div class="flex items-center justify-center h-16 bg-green-600">
      <div class="flex items-center"><i class="fas fa-seedling text-white text-2xl mr-3"></i> <span class="text-white text-lg font-bold">AgriTech</span>
      </div>
@@ -2926,8 +2927,23 @@
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('sidebar-hidden');
-            sidebar.classList.toggle('sidebar-active');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            if (sidebar.classList.contains('sidebar-hidden')) {
+                // Show sidebar
+                sidebar.classList.remove('sidebar-hidden');
+                sidebar.classList.add('sidebar-active');
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                }
+            } else {
+                // Hide sidebar
+                sidebar.classList.add('sidebar-hidden');
+                sidebar.classList.remove('sidebar-active');
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                }
+            }
         }
 
         function toggleProfileMenu() {
@@ -2966,7 +2982,13 @@
                 
                 // Close sidebar on mobile
                 if (window.innerWidth < 1024) {
-                    toggleSidebar();
+                    const sidebar = document.getElementById('sidebar');
+                    const overlay = document.getElementById('sidebar-overlay');
+                    sidebar.classList.add('sidebar-hidden');
+                    sidebar.classList.remove('sidebar-active');
+                    if (overlay) {
+                        overlay.classList.add('hidden');
+                    }
                 }
             } catch (error) {
                 console.error('Error in showSection:', error);
@@ -3303,6 +3325,17 @@
                     document.getElementById('profile-menu')?.classList.add('hidden');
                 }
             });
+            
+            // Close sidebar when clicking overlay
+            const overlay = document.getElementById('sidebar-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', function() {
+                    const sidebar = document.getElementById('sidebar');
+                    sidebar.classList.add('sidebar-hidden');
+                    sidebar.classList.remove('sidebar-active');
+                    overlay.classList.add('hidden');
+                });
+            }
         });
 
         // CRUD Operations
@@ -4611,5 +4644,5 @@
         window.debugQuickTest = debugQuickTest;
         window.debugManualSave = debugManualSave;
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fc17cf83246038',t:'MTc2MzM0OTYzNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99fc24e8f50ff8d3',t:'MTc2MzM1MDE3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
